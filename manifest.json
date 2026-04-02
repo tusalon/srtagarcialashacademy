@@ -1,0 +1,22 @@
+{
+  "name": "Yailen Nails",
+  "short_name": "Yailen",
+  "description": "Uñas y belleza - Tu espacio de cuidado personal",
+  "start_url": "/yailennails/",
+  "scope": "/yailennails/",
+  "display": "standalone",
+  "background_color": "#ec4899",
+  "theme_color": "#ec4899",
+  "icons": [
+    {
+      "src": "/yailennails/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/yailennails/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

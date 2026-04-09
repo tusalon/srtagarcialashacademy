@@ -13,10 +13,10 @@ function getNegocioId() {
 }
 
 let profesionalesCache = [];
-let ultimaActualizacionprofesionales = 0;
-const CACHE_DURATION_profesionales = 5 * 60 * 1000;
+let ultimaActualizacionProfesionales = 0;
+const CACHE_DURATION_PROFESIONALES = 5 * 60 * 1000;
 
-async function cargarprofesionalesDesdeDB() {
+async function cargarProfesionalesDesdeDB() {
     try {
         const negocioId = getNegocioId();
         console.log('🌐 Cargando profesionales desde Supabase para negocio:', negocioId);
@@ -36,7 +36,7 @@ async function cargarprofesionalesDesdeDB() {
         
         const data = await response.json();
         profesionalesCache = data;
-        ultimaActualizacionprofesionales = Date.now();
+        ultimaActualizacionProfesionales = Date.now();
         return data;
     } catch (error) {
         console.error('Error cargando profesionales:', error);
@@ -44,16 +44,16 @@ async function cargarprofesionalesDesdeDB() {
     }
 }
 
-window.salonprofesionales = {
+window.salonProfesionales = {
     getAll: async function(activos = true) {
-        if (Date.now() - ultimaActualizacionprofesionales < CACHE_DURATION_profesionales && profesionalesCache.length > 0) {
+        if (Date.now() - ultimaActualizacionProfesionales < CACHE_DURATION_PROFESIONALES && profesionalesCache.length > 0) {
             if (activos) {
                 return profesionalesCache.filter(p => p.activo === true);
             }
             return [...profesionalesCache];
         }
         
-        const datos = await cargarprofesionalesDesdeDB();
+        const datos = await cargarProfesionalesDesdeDB();
         if (datos) {
             if (activos) {
                 return datos.filter(p => p.activo === true);
@@ -80,15 +80,15 @@ window.salonprofesionales = {
             const data = await response.json();
             return data[0] || null;
         } catch (error) {
-            console.error('Error obteniendo Lashista:', error);
+            console.error('Error obteniendo profesional:', error);
             return null;
         }
     },
     
-    crear: async function(Lashista) {
+    crear: async function(profesional) {
         try {
             const negocioId = getNegocioId();
-            console.log('➕ Creando Lashista para negocio:', negocioId);
+            console.log('➕ Creando profesional para negocio:', negocioId);
             
             const response = await fetch(
                 `${window.SUPABASE_URL}/rest/v1/profesionales`,
@@ -102,14 +102,14 @@ window.salonprofesionales = {
                     },
                     body: JSON.stringify({
                         negocio_id: negocioId,
-                        nombre: Lashista.nombre,
-                        especialidad: Lashista.especialidad,
-                        color: Lashista.color || 'bg-purple-700',
-                        avatar: Lashista.avatar || '👤',
+                        nombre: profesional.nombre,
+                        especialidad: profesional.especialidad,
+                        color: profesional.color || 'bg-purple-700',
+                        avatar: profesional.avatar || '👤',
                         activo: true,
-                        telefono: Lashista.telefono || null,
-                        password: Lashista.password || null,
-                        nivel: Lashista.nivel || 1
+                        telefono: profesional.telefono || null,
+                        password: profesional.password || null,
+                        nivel: profesional.nivel || 1
                     })
                 }
             );
@@ -117,7 +117,7 @@ window.salonprofesionales = {
             if (!response.ok) return null;
             
             const nuevo = await response.json();
-            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
+            profesionalesCache = await cargarProfesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
                 window.dispatchEvent(new Event('profesionalesActualizados'));
@@ -133,7 +133,7 @@ window.salonprofesionales = {
     actualizar: async function(id, cambios) {
         try {
             const negocioId = getNegocioId();
-            console.log('✏️ Actualizando Lashista:', id, 'negocio:', negocioId);
+            console.log('✏️ Actualizando profesional:', id, 'negocio:', negocioId);
             
             const response = await fetch(
                 `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=eq.${id}`,
@@ -152,7 +152,7 @@ window.salonprofesionales = {
             if (!response.ok) return null;
             
             const actualizado = await response.json();
-            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
+            profesionalesCache = await cargarProfesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
                 window.dispatchEvent(new Event('profesionalesActualizados'));
@@ -168,7 +168,7 @@ window.salonprofesionales = {
     eliminar: async function(id) {
         try {
             const negocioId = getNegocioId();
-            console.log('🗑️ Eliminando Lashista:', id, 'negocio:', negocioId);
+            console.log('🗑️ Eliminando profesional:', id, 'negocio:', negocioId);
             
             const response = await fetch(
                 `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=eq.${id}`,
@@ -184,7 +184,7 @@ window.salonprofesionales = {
             
             if (!response.ok) return false;
             
-            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
+            profesionalesCache = await cargarProfesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
                 window.dispatchEvent(new Event('profesionalesActualizados'));
@@ -199,5 +199,5 @@ window.salonprofesionales = {
 };
 
 setTimeout(async () => {
-    await window.salonprofesionales.getAll(false);
+    await window.salonProfesionales.getAll(false);
 }, 1000);

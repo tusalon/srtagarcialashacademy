@@ -130,7 +130,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
 
             {/* Contenido scrolleable */}
             <div className="relative z-10 min-h-screen flex items-start justify-center py-16 px-4">
-                <div className="w-full max-w-2xl bg-white/20 backdrop-blur-md p-6 sm:p-10 rounded-3xl shadow-2xl border border-purple-300/50 my-auto">
+                <div className="w-full max-w-2xl bg-white/20 p-6 sm:p-10 rounded-3xl shadow-2xl border border-purple-300/50 my-auto">
                     <div className="text-center space-y-6">
                         {/* Logo o sticker */}
                         {config?.logo_url ? (

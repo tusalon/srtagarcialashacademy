@@ -244,7 +244,7 @@ function ClientAuthScreen({ onAccessGranted, onGoBack }) {
             )}
 
             <div className="relative z-10 max-w-md w-full mx-auto">
-                <div className="bg-white/20 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-purple-300/50">
+                <div className="bg-white/20 p-8 rounded-2xl shadow-2xl border border-purple-300/50">
                     {/* Logo o sticker */}
                     <div className="text-center mb-6">
                         {logoUrl ? (

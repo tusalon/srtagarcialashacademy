@@ -231,10 +231,10 @@ function ClientApp() {
                                 selectedService={selectedService}
                             />
                             
-                            {/* SECCIÓN 2: LashistaES - CON selectedService */}
+                            {/* SECCIÓN 2: profesionales - CON selectedService */}
                             {selectedService && (
                                 <div id="Lashista-section">
-                                    <LashistaSelector 
+                                    <ProfesionalSelector 
                                         onSelect={setSelectedLashista} 
                                         selectedLashista={selectedLashista}
                                         selectedService={selectedService}

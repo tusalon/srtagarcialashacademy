@@ -27,7 +27,7 @@ let configuracionGlobal = {
     max_antelacion_dias: 30
 };
 
-let horariosLashistaes = {};
+let horariosprofesionales = {};
 let ultimaActualizacion = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -81,13 +81,13 @@ async function cargarConfiguracionGlobal() {
     }
 }
 
-async function cargarHorariosLashistaes() {
+async function cargarHorariosprofesionales() {
     try {
         const negocioId = getNegocioId();
-        console.log('🌐 Cargando horarios de Lashistaes desde Supabase para negocio:', negocioId);
+        console.log('🌐 Cargando horarios de profesionales desde Supabase para negocio:', negocioId);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&select=*`,
+            `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -109,7 +109,7 @@ async function cargarHorariosLashistaes() {
             };
         });
         
-        horariosLashistaes = horarios;
+        horariosprofesionales = horarios;
         return horarios;
     } catch (error) {
         console.error('Error cargando horarios:', error);
@@ -213,7 +213,7 @@ window.salonConfig = {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -238,7 +238,7 @@ window.salonConfig = {
             console.log(`💾 Guardando horarios por día para Lashista ${LashistaId} (negocio: ${negocioId}):`, horariosPorDia);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id,horas,dias`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id,horas,dias`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -264,7 +264,7 @@ window.salonConfig = {
             
             if (existe && existe.length > 0) {
                 console.log('🔄 Actualizando registro existente ID:', existe[0].id);
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
                 method = 'PATCH';
                 body = JSON.stringify({
                     horarios_por_dia: horariosPorDia,
@@ -273,7 +273,7 @@ window.salonConfig = {
                 });
             } else {
                 console.log('➕ Insertando nuevo registro');
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales`;
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
@@ -305,7 +305,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosLashistaes[LashistaId] = {
+            horariosprofesionales[LashistaId] = {
                 horariosPorDia: horariosPorDia,
                 horas: horasArray,
                 dias: diasQueTrabajan
@@ -329,7 +329,7 @@ window.salonConfig = {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -364,7 +364,7 @@ window.salonConfig = {
             console.log(`💾 Guardando horarios para Lashista ${LashistaId} (negocio: ${negocioId}):`, horarios);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -382,7 +382,7 @@ window.salonConfig = {
             
             if (existe && existe.length > 0) {
                 console.log('🔄 Actualizando registro existente ID:', existe[0].id);
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
                 method = 'PATCH';
                 body = JSON.stringify({
                     horas: horarios.horas || [],
@@ -390,7 +390,7 @@ window.salonConfig = {
                 });
             } else {
                 console.log('➕ Insertando nuevo registro');
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales`;
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
@@ -421,7 +421,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosLashistaes[LashistaId] = {
+            horariosprofesionales[LashistaId] = {
                 horas: horarios.horas || [],
                 dias: horarios.dias || []
             };
@@ -463,7 +463,7 @@ window.salonConfig = {
 // Cargar configuración al inicio
 setTimeout(async () => {
     await cargarConfiguracionGlobal();
-    await cargarHorariosLashistaes();
+    await cargarHorariosprofesionales();
 }, 1000);
 
 console.log('✅ salonConfig inicializado');

@@ -344,7 +344,7 @@ function AdminApp() {
     const [LashistaSeleccionadoDispo, setLashistaSeleccionadoDispo] = React.useState(null);
 
     const [serviciosList, setServiciosList] = React.useState([]);
-    const [LashistaesList, setLashistaesList] = React.useState([]);
+    const [profesionalesList, setprofesionalesList] = React.useState([]);
     const [horariosDisponibles, setHorariosDisponibles] = React.useState([]);
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [diasLaborales, setDiasLaborales] = React.useState([]);
@@ -436,9 +436,9 @@ function AdminApp() {
                 const servicios = await window.salonServicios.getAll(true);
                 setServiciosList(servicios || []);
             }
-            if (window.salonLashistaes) {
-                const Lashistaes = await window.salonLashistaes.getAll(true);
-                setLashistaesList(Lashistaes || []);
+            if (window.salonprofesionales) {
+                const profesionales = await window.salonprofesionales.getAll(true);
+                setprofesionalesList(profesionales || []);
             }
         };
         cargarDatosModal();
@@ -674,8 +674,8 @@ function AdminApp() {
     };
 
     const cargarDisponibilidadDelMes = async (fecha, LashistaId = null) => {
-        if (!LashistaId && LashistaesList.length > 0) {
-            LashistaId = LashistaesList[0]?.id;
+        if (!LashistaId && profesionalesList.length > 0) {
+            LashistaId = profesionalesList[0]?.id;
         }
         if (!LashistaId) return;
         
@@ -694,7 +694,7 @@ function AdminApp() {
             console.log(`📊 Horarios por día:`, horariosPorDia);
             console.log('=========================================');
             
-            const LashistaObj = LashistaesList.find(p => p.id === LashistaId);
+            const LashistaObj = profesionalesList.find(p => p.id === LashistaId);
             const fechasLibresPersonales = LashistaObj?.fechas_libres || [];
             
             const primerDia = new Date(year, month, 1);
@@ -852,7 +852,7 @@ function AdminApp() {
             return false;
         }
         
-        const Lashista = LashistaesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
+        const Lashista = profesionalesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
         if (Lashista && Lashista.fechas_libres && Lashista.fechas_libres.includes(fechaStr)) {
             return false;
         }
@@ -911,7 +911,7 @@ function AdminApp() {
                 return;
             }
             
-            const Lashista = LashistaesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
+            const Lashista = profesionalesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
             if (!Lashista) {
                 alert('Lashista no encontrado');
                 return;
@@ -1292,7 +1292,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
         
         if (userRole === 'admin' || (userRole === 'Lashista' && userNivel >= 3)) {
             tabs.push({ id: 'servicios', icono: '💈', label: 'Servicios' });
-            tabs.push({ id: 'Lashistaes', icono: '👥', label: 'Lashistaes' });
+            tabs.push({ id: 'profesionales', icono: '👥', label: 'profesionales' });
         }
         
         return tabs;
@@ -1443,7 +1443,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Lashista *</label>
                                     <select value={nuevaReservaData.Lashista_id} onChange={(e) => setNuevaReservaData({...nuevaReservaData, Lashista_id: e.target.value})} className="w-full border rounded-lg px-3 py-2">
                                         <option value="">Seleccionar Lashista</option>
-                                        {LashistaesList.map(p => (<option key={p.id} value={p.id}>{p.nombre} - {p.especialidad}</option>))}
+                                        {profesionalesList.map(p => (<option key={p.id} value={p.id}>{p.nombre} - {p.especialidad}</option>))}
                                     </select>
                                 </div>
                                 {userRole === 'admin' && (
@@ -1522,7 +1522,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                 <button onClick={() => setShowDisponibilidadModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                             </div>
                             
-                            {userRole === 'admin' && LashistaesList.length > 0 && (
+                            {userRole === 'admin' && profesionalesList.length > 0 && (
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Lashista:</label>
                                     <select
@@ -1535,7 +1535,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                         className="w-full border rounded-lg px-3 py-2"
                                     >
                                         <option value="">Seleccionar Lashista</option>
-                                        {LashistaesList.map(p => (
+                                        {profesionalesList.map(p => (
                                             <option key={p.id} value={p.id}>{p.nombre}</option>
                                         ))}
                                     </select>
@@ -1612,8 +1612,8 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                     <ServiciosPanel />
                 )}
 
-                {tabActivo === 'Lashistaes' && (userRole === 'admin' || userNivel >= 3) && (
-                    <LashistaesPanel />
+                {tabActivo === 'profesionales' && (userRole === 'admin' || userNivel >= 3) && (
+                    <profesionalesPanel />
                 )}
 
                 {tabActivo === 'clientes' && (userRole === 'admin' || userNivel >= 2) && (

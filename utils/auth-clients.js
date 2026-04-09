@@ -1,4 +1,4 @@
-// utils/auth-clients.js - VERSIÓN CON REGISTRO AUTOMÁTICO
+﻿// utils/auth-clients.js - VERSIÓN CON REGISTRO AUTOMÁTICO
 // Los clientes se registran solos sin necesidad de aprobación
 
 console.log('🚀 auth-clients.js CARGADO - MODO REGISTRO AUTOMÁTICO');

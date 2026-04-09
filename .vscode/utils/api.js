@@ -1,4 +1,4 @@
-// utils/api.js - Versión ultra ligera con cache (ADAPTADA PARA BENETTSALON)
+﻿// utils/api.js - Versión ultra ligera con cache (ADAPTADA PARA BENETTSALON)
 
 const SUPABASE_URL = 'https://torwzztbyeryptydytwr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcnd6enRieWVyeXB0eWR5dHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzODAxNzIsImV4cCI6MjA4Njk1NjE3Mn0.yISCKznhbQt5UAW5lwSuG2A2NUS71GSbirhpa9mMpyI';

@@ -1,4 +1,4 @@
-// components/BookingForm.js - Con trabajador
+﻿// components/BookingForm.js - Con trabajador
 
 function BookingForm({ service, worker, date, time, onSubmit, onCancel, cliente }) {
     const [submitting, setSubmitting] = React.useState(false);
@@ -57,23 +57,23 @@ function BookingForm({ service, worker, date, time, onSubmit, onCancel, cliente 
                 </div>
 
                 <div className="space-y-4">
-                    <div className="bg-pink-50 p-4 rounded-xl border border-pink-100 space-y-2">
+                    <div className="bg-purple-100 p-4 rounded-xl border border-purple-200 space-y-2">
                         <div className="flex items-center gap-3 text-gray-700">
-                            <div className="icon-sparkles text-pink-500"></div>
+                            <div className="icon-sparkles text-purple-600"></div>
                             <span className="font-medium">{service.name}</span>
                         </div>
                         
                         <div className="flex items-center gap-3 text-gray-700">
-                            <div className="icon-users text-pink-500"></div>
+                            <div className="icon-users text-purple-600"></div>
                             <span>Con: <strong>{worker.nombre}</strong></span>
                         </div>
                         
                         <div className="flex items-center gap-3 text-gray-700">
-                            <div className="icon-calendar text-pink-500"></div>
+                            <div className="icon-calendar text-purple-600"></div>
                             <span>{date}</span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-700">
-                            <div className="icon-clock text-pink-500"></div>
+                            <div className="icon-clock text-purple-600"></div>
                             <span>{formatTo12Hour(time)} ({service.duration} min)</span>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-// components/WhatsAppButton.js
+﻿// components/WhatsAppButton.js
 
 function WhatsAppButton() {
     const [telefono, setTelefono] = React.useState('55002272');
@@ -21,7 +21,7 @@ function WhatsAppButton() {
             title="Chat en WhatsApp"
         >
             <div className="icon-message-circle text-3xl"></div>
-            <span className="absolute right-full mr-3 bg-gray-800 text-amber-400 px-3 py-1 rounded-lg text-sm font-medium shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-amber-600">
+            <span className="absolute right-full mr-3 bg-gray-800 text-amber-400 px-3 py-1 rounded-lg text-sm font-medium shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-purple-700">
                 ¡Agende su turno!
             </span>
         </a>

@@ -1,4 +1,4 @@
-// utils/config.js - Configuración del negocio (CORREGIDO)
+﻿// utils/config.js - Configuración del negocio (CORREGIDO)
 
 // ============================================
 // PROTECCIÓN CONTRA DOBLE CARGA
@@ -27,7 +27,7 @@ let configuracionGlobal = {
     max_antelacion_dias: 30
 };
 
-let horariosProfesionales = {};
+let horariosLashistaes = {};
 let ultimaActualizacion = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -81,13 +81,13 @@ async function cargarConfiguracionGlobal() {
     }
 }
 
-async function cargarHorariosProfesionales() {
+async function cargarHorariosLashistaes() {
     try {
         const negocioId = getNegocioId();
-        console.log('🌐 Cargando horarios de profesionales desde Supabase para negocio:', negocioId);
+        console.log('🌐 Cargando horarios de Lashistaes desde Supabase para negocio:', negocioId);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&select=*`,
+            `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -102,14 +102,14 @@ async function cargarHorariosProfesionales() {
         
         const horarios = {};
         (data || []).forEach(item => {
-            horarios[item.profesional_id] = {
+            horarios[item.Lashista_id] = {
                 horariosPorDia: item.horarios_por_dia || {},
                 horas: item.horas || [],
                 dias: item.dias || []
             };
         });
         
-        horariosProfesionales = horarios;
+        horariosLashistaes = horarios;
         return horarios;
     } catch (error) {
         console.error('Error cargando horarios:', error);
@@ -209,11 +209,11 @@ window.salonConfig = {
         }
     },
     
-    getHorariosPorDia: async function(profesionalId) {
+    getHorariosPorDia: async function(LashistaId) {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -232,13 +232,13 @@ window.salonConfig = {
         }
     },
     
-    guardarHorariosPorDia: async function(profesionalId, horariosPorDia) {
+    guardarHorariosPorDia: async function(LashistaId, horariosPorDia) {
         try {
             const negocioId = getNegocioId();
-            console.log(`💾 Guardando horarios por día para profesional ${profesionalId} (negocio: ${negocioId}):`, horariosPorDia);
+            console.log(`💾 Guardando horarios por día para Lashista ${LashistaId} (negocio: ${negocioId}):`, horariosPorDia);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=id,horas,dias`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id,horas,dias`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -264,7 +264,7 @@ window.salonConfig = {
             
             if (existe && existe.length > 0) {
                 console.log('🔄 Actualizando registro existente ID:', existe[0].id);
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
                 method = 'PATCH';
                 body = JSON.stringify({
                     horarios_por_dia: horariosPorDia,
@@ -273,11 +273,11 @@ window.salonConfig = {
                 });
             } else {
                 console.log('➕ Insertando nuevo registro');
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes`;
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
-                    profesional_id: profesionalId,
+                    Lashista_id: LashistaId,
                     horarios_por_dia: horariosPorDia,
                     horas: horasArray,
                     dias: diasQueTrabajan
@@ -305,7 +305,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosProfesionales[profesionalId] = {
+            horariosLashistaes[LashistaId] = {
                 horariosPorDia: horariosPorDia,
                 horas: horasArray,
                 dias: diasQueTrabajan
@@ -325,11 +325,11 @@ window.salonConfig = {
         }
     },
     
-    getHorariosProfesional: async function(profesionalId) {
+    getHorariosLashista: async function(LashistaId) {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -354,17 +354,17 @@ window.salonConfig = {
         }
     },
     
-    guardarHorariosProfesional: async function(profesionalId, horarios) {
+    guardarHorariosLashista: async function(LashistaId, horarios) {
         if (horarios.horariosPorDia) {
-            return this.guardarHorariosPorDia(profesionalId, horarios.horariosPorDia);
+            return this.guardarHorariosPorDia(LashistaId, horarios.horariosPorDia);
         }
         
         try {
             const negocioId = getNegocioId();
-            console.log(`💾 Guardando horarios para profesional ${profesionalId} (negocio: ${negocioId}):`, horarios);
+            console.log(`💾 Guardando horarios para Lashista ${LashistaId} (negocio: ${negocioId}):`, horarios);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=id`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -382,7 +382,7 @@ window.salonConfig = {
             
             if (existe && existe.length > 0) {
                 console.log('🔄 Actualizando registro existente ID:', existe[0].id);
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes?negocio_id=eq.${negocioId}&id=eq.${existe[0].id}`;
                 method = 'PATCH';
                 body = JSON.stringify({
                     horas: horarios.horas || [],
@@ -390,11 +390,11 @@ window.salonConfig = {
                 });
             } else {
                 console.log('➕ Insertando nuevo registro');
-                url = `${window.SUPABASE_URL}/rest/v1/horarios_profesionales`;
+                url = `${window.SUPABASE_URL}/rest/v1/horarios_Lashistaes`;
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
-                    profesional_id: profesionalId,
+                    Lashista_id: LashistaId,
                     horas: horarios.horas || [],
                     dias: horarios.dias || []
                 });
@@ -421,7 +421,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosProfesionales[profesionalId] = {
+            horariosLashistaes[LashistaId] = {
                 horas: horarios.horas || [],
                 dias: horarios.dias || []
             };
@@ -434,21 +434,21 @@ window.salonConfig = {
             return Array.isArray(data) ? data[0] : data;
             
         } catch (error) {
-            console.error('Error en guardarHorariosProfesional:', error);
+            console.error('Error en guardarHorariosLashista:', error);
             alert('Error al guardar horarios: ' + error.message);
             return null;
         }
     },
     
     // Alias para compatibilidad
-    getHorariosBarbero: async function(profesionalId) {
-        console.warn('⚠️ getHorariosBarbero está obsoleto, usar getHorariosProfesional');
-        return this.getHorariosProfesional(profesionalId);
+    getHorariosBarbero: async function(LashistaId) {
+        console.warn('⚠️ getHorariosBarbero está obsoleto, usar getHorariosLashista');
+        return this.getHorariosLashista(LashistaId);
     },
     
-    guardarHorariosBarbero: async function(profesionalId, horarios) {
-        console.warn('⚠️ guardarHorariosBarbero está obsoleto, usar guardarHorariosProfesional');
-        return this.guardarHorariosProfesional(profesionalId, horarios);
+    guardarHorariosBarbero: async function(LashistaId, horarios) {
+        console.warn('⚠️ guardarHorariosBarbero está obsoleto, usar guardarHorariosLashista');
+        return this.guardarHorariosLashista(LashistaId, horarios);
     },
     
     horasToIndices: function(horasLegibles) {
@@ -463,7 +463,7 @@ window.salonConfig = {
 // Cargar configuración al inicio
 setTimeout(async () => {
     await cargarConfiguracionGlobal();
-    await cargarHorariosProfesionales();
+    await cargarHorariosLashistaes();
 }, 1000);
 
 console.log('✅ salonConfig inicializado');

@@ -1,6 +1,6 @@
-// utils/auth-profesionales.js - Autenticación para profesionales (CORREGIDO)
+﻿// utils/auth-Lashistaes.js - Autenticación para Lashistaes (CORREGIDO)
 
-console.log('👤 auth-profesionales.js cargado');
+console.log('👤 auth-Lashistaes.js cargado');
 
 // Helper para obtener negocio_id - SIN RECURSIÓN
 function getNegocioId() {
@@ -13,16 +13,16 @@ function getNegocioId() {
 }
 
 // ============================================
-// FUNCIONES DE AUTENTICACIÓN PARA PROFESIONALES
+// FUNCIONES DE AUTENTICACIÓN PARA LashistaES
 // ============================================
 
-window.loginProfesional = async function(telefono, password) {
+window.loginLashista = async function(telefono, password) {
     try {
         const negocioId = getNegocioId();
-        console.log('🔐 Intentando login de profesional:', telefono, 'negocio:', negocioId);
+        console.log('🔐 Intentando login de Lashista:', telefono, 'negocio:', negocioId);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&password=eq.${password}&activo=eq.true&select=*`,
+            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&password=eq.${password}&activo=eq.true&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -41,23 +41,23 @@ window.loginProfesional = async function(telefono, password) {
         console.log('📋 Resultado login:', data);
         
         if (data && data.length > 0) {
-            const profesional = data[0];
-            return profesional;
+            const Lashista = data[0];
+            return Lashista;
         }
         return null;
     } catch (error) {
-        console.error('Error en loginProfesional:', error);
+        console.error('Error en loginLashista:', error);
         return null;
     }
 };
 
-window.verificarProfesionalPorTelefono = async function(telefono) {
+window.verificarLashistaPorTelefono = async function(telefono) {
     try {
         const negocioId = getNegocioId();
-        console.log('🔍 Verificando si es profesional (solo teléfono):', telefono, 'negocio:', negocioId);
+        console.log('🔍 Verificando si es Lashista (solo teléfono):', telefono, 'negocio:', negocioId);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&activo=eq.true&select=id,nombre,telefono,nivel`,
+            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&activo=eq.true&select=id,nombre,telefono,nivel`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -80,13 +80,13 @@ window.verificarProfesionalPorTelefono = async function(telefono) {
         }
         return null;
     } catch (error) {
-        console.error('Error verificando profesional:', error);
+        console.error('Error verificando Lashista:', error);
         return null;
     }
 };
 
-window.getProfesionalAutenticado = function() {
-    const auth = localStorage.getItem('profesionalAuth');
+window.getLashistaAutenticado = function() {
+    const auth = localStorage.getItem('LashistaAuth');
     if (auth) {
         try {
             return JSON.parse(auth);
@@ -108,9 +108,9 @@ window.obtenerRolUsuario = async function(telefono) {
         
         const telefonoLimpio = telefono.replace(/\D/g, '');
         
-        // Verificar si es PROFESIONAL
-        const profesionalRes = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&telefono=eq.${telefonoLimpio}&activo=eq.true&select=id,nombre,nivel`,
+        // Verificar si es Lashista
+        const LashistaRes = await fetch(
+            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefonoLimpio}&activo=eq.true&select=id,nombre,nivel`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -120,15 +120,15 @@ window.obtenerRolUsuario = async function(telefono) {
             }
         );
         
-        if (profesionalRes.ok) {
-            const profesionales = await profesionalRes.json();
-            if (profesionales && profesionales.length > 0) {
-                console.log('👨‍🎨 Es profesional:', profesionales[0].nombre);
+        if (LashistaRes.ok) {
+            const Lashistaes = await LashistaRes.json();
+            if (Lashistaes && Lashistaes.length > 0) {
+                console.log('👨‍🎨 Es Lashista:', Lashistaes[0].nombre);
                 return {
-                    rol: 'profesional',
-                    id: profesionales[0].id,
-                    nombre: profesionales[0].nombre,
-                    nivel: profesionales[0].nivel || 1
+                    rol: 'Lashista',
+                    id: Lashistaes[0].id,
+                    nombre: Lashistaes[0].nombre,
+                    nivel: Lashistaes[0].nivel || 1
                 };
             }
         }
@@ -146,19 +146,19 @@ window.obtenerRolUsuario = async function(telefono) {
 
 window.tieneAccesoPanel = async function(telefono) {
     const rol = await window.obtenerRolUsuario(telefono);
-    return rol.rol === 'admin' || rol.rol === 'profesional';
+    return rol.rol === 'admin' || rol.rol === 'Lashista';
 };
 
 // ============================================
-// FUNCIONES PARA RESERVAS DE PROFESIONALES
+// FUNCIONES PARA RESERVAS DE LashistaES
 // ============================================
 
-window.getReservasPorProfesional = async function(profesionalId, soloActivas = true) {
+window.getReservasPorLashista = async function(LashistaId, soloActivas = true) {
     try {
         const negocioId = getNegocioId();
-        console.log(`📋 Obteniendo reservas para profesional ${profesionalId} (negocio: ${negocioId})`);
+        console.log(`📋 Obteniendo reservas para Lashista ${LashistaId} (negocio: ${negocioId})`);
         
-        let url = `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&order=fecha.desc,hora_inicio.asc`;
+        let url = `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&order=fecha.desc,hora_inicio.asc`;
         
         if (soloActivas) {
             url += '&estado=neq.Cancelado';
@@ -186,4 +186,4 @@ window.getReservasPorProfesional = async function(profesionalId, soloActivas = t
 };
 
 // Alias para compatibilidad
-window.getReservasPorBarbero = window.getReservasPorProfesional;
+window.getReservasPorBarbero = window.getReservasPorLashista;

@@ -1,4 +1,4 @@
-// app.js - Versión optimizada para internet lento
+﻿// app.js - Versión optimizada para internet lento
 
 function App() {
     const [showWelcome, setShowWelcome] = React.useState(true);

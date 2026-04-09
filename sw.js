@@ -1,22 +1,22 @@
-// sw.js - Service Worker para Yailen Nails
+﻿// sw.js - Service Worker para Srta.García Lash Academy
 
-const CACHE_NAME = 'yailennails-v1';
+const CACHE_NAME = 'srtagarcialashacademy-v1';
 const urlsToCache = [
-  '/yailennails/',
-  '/yailennails/index.html',
-  '/yailennails/admin.html',
-  '/yailennails/admin-login.html',
-  '/yailennails/setup-wizard.html',
-  '/yailennails/editar-negocio.html',
-  '/yailennails/manifest.json',
-  '/yailennails/icons/icon-72x72.png',
-  '/yailennails/icons/icon-96x96.png',
-  '/yailennails/icons/icon-128x128.png',
-  '/yailennails/icons/icon-144x144.png',
-  '/yailennails/icons/icon-152x152.png',
-  '/yailennails/icons/icon-192x192.png',
-  '/yailennails/icons/icon-384x384.png',
-  '/yailennails/icons/icon-512x512.png'
+  '/srtagarcialashacademy/',
+  '/srtagarcialashacademy/index.html',
+  '/srtagarcialashacademy/admin.html',
+  '/srtagarcialashacademy/admin-login.html',
+  '/srtagarcialashacademy/setup-wizard.html',
+  '/srtagarcialashacademy/editar-negocio.html',
+  '/srtagarcialashacademy/manifest.json',
+  '/srtagarcialashacademy/icons/icon-72x72.png',
+  '/srtagarcialashacademy/icons/icon-96x96.png',
+  '/srtagarcialashacademy/icons/icon-128x128.png',
+  '/srtagarcialashacademy/icons/icon-144x144.png',
+  '/srtagarcialashacademy/icons/icon-152x152.png',
+  '/srtagarcialashacademy/icons/icon-192x192.png',
+  '/srtagarcialashacademy/icons/icon-384x384.png',
+  '/srtagarcialashacademy/icons/icon-512x512.png'
 ];
 
 // ============================================
@@ -108,7 +108,7 @@ self.addEventListener('fetch', event => {
           }
           // Si no hay cache y es imagen, devolver icon por defecto
           if (event.request.url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
-            return caches.match('/yailennails/icons/icon-192x192.png');
+            return caches.match('/srtagarcialashacademy/icons/icon-192x192.png');
           }
           return new Response('Error de red', { status: 408 });
         });
@@ -138,6 +138,6 @@ self.addEventListener('message', event => {
   }
 });
 
-console.log('✅ Service Worker configurado para Yailen Nails');
+console.log('✅ Service Worker configurado para Srta.García Lash Academy');
 console.log('📦 Cache:', CACHE_NAME);
 console.log('📄 Archivos a cachear:', urlsToCache.length);

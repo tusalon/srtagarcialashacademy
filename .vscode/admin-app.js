@@ -1,4 +1,4 @@
-// admin-app.js - VERSIÓN COMPLETA CON FUNCIONES ASYNC CORREGIDAS Y BOTÓN EDITAR NEGOCIO
+﻿// admin-app.js - VERSIÓN COMPLETA CON FUNCIONES ASYNC CORREGIDAS Y BOTÓN EDITAR NEGOCIO
 
 // 🔥 CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = 'https://torwzztbyeryptydytwr.supabase.co';
@@ -272,7 +272,7 @@ function AdminApp() {
                         {/* NUEVO BOTÓN: Editar Negocio */}
                         <button
                             onClick={() => window.location.href = 'editar-negocio.html'}
-                            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition transform hover:scale-105 shadow-md"
+                            className="flex items-center gap-2 bg-purple-700 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition transform hover:scale-105 shadow-md"
                             title="Editar configuración del negocio"
                         >
                             <i className="icon-building"></i>
@@ -301,7 +301,7 @@ function AdminApp() {
                     {[
                         { id: 'reservas', icono: '📅', label: 'Reservas' },
                         { id: 'configuracion', icono: '⚙️', label: 'Configuración' },
-                        { id: 'servicios', icono: '💅', label: 'Servicios' },
+                        { id: 'servicios', icono: '💫', label: 'Servicios' },
                         { id: 'trabajadoras', icono: '👥', label: 'Trabajadoras' },
                         { id: 'clientes', icono: '👤', label: 'Clientes' }
                     ].map(tab => (
@@ -310,7 +310,7 @@ function AdminApp() {
                             onClick={() => setTabActivo(tab.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                                 tabActivo === tab.id 
-                                    ? 'bg-pink-600 text-white shadow-md scale-105' 
+                                    ? 'bg-purple-700 text-white shadow-md scale-105' 
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -555,7 +555,7 @@ function AdminApp() {
                             </div>
 
                             <div className="text-sm text-gray-500 border-t pt-2 mt-1">
-                                Mostrando: <span className="font-bold text-pink-600">{filteredBookings.length}</span> reservas
+                                Mostrando: <span className="font-bold text-purple-700">{filteredBookings.length}</span> reservas
                                 {filterDate && <span> • Fecha: {filterDate}</span>}
                                 {statusFilter !== 'todas' && (
                                     <span> • {statusFilter === 'activas' ? 'Activas' : 'Canceladas'}</span>
@@ -566,7 +566,7 @@ function AdminApp() {
                         {/* LISTADO DE RESERVAS */}
                         {loading ? (
                             <div className="text-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
                                 <p className="text-gray-500 mt-4">Cargando reservas...</p>
                             </div>
                         ) : (
@@ -577,7 +577,7 @@ function AdminApp() {
                                         <div key={b.id} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition">
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">{b.fecha}</span>
-                                                <span className="text-sm bg-pink-100 text-pink-700 px-2 py-1 rounded-full">
+                                                <span className="text-sm bg-purple-200 text-pink-700 px-2 py-1 rounded-full">
                                                     {formatTo12Hour(b.hora_inicio)}
                                                 </span>
                                             </div>

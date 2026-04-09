@@ -1,7 +1,7 @@
-// utils/servicios.js - Gestión de servicios (CORREGIDO)
-// CON FUNCIONES PARA ASIGNAR PROFESIONALES A SERVICIOS
+﻿// utils/servicios.js - Gestión de servicios (CORREGIDO)
+// CON FUNCIONES PARA ASIGNAR LashistaES A SERVICIOS
 
-console.log('💅 servicios.js cargado (modo Supabase)');
+console.log('💫 servicios.js cargado (modo Supabase)');
 
 // Helper para obtener negocio_id - SIN RECURSIÓN
 function getNegocioId() {
@@ -231,19 +231,19 @@ window.salonServicios = {
 };
 
 // ============================================
-// FUNCIONES PARA ASIGNAR PROFESIONALES A SERVICIOS
+// FUNCIONES PARA ASIGNAR LashistaES A SERVICIOS
 // ============================================
 
 /**
- * Obtiene los profesionales asignados a un servicio
+ * Obtiene los Lashistaes asignados a un servicio
  */
-window.getProfesionalesPorServicio = async function(servicioId) {
+window.getLashistaesPorServicio = async function(servicioId) {
     try {
         const negocioId = getNegocioId();
         if (!negocioId || !servicioId) return [];
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/servicios_profesionales?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&select=profesional_id`,
+            `${window.SUPABASE_URL}/rest/v1/servicios_Lashistaes?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&select=Lashista_id`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -255,12 +255,12 @@ window.getProfesionalesPorServicio = async function(servicioId) {
         if (!response.ok) return [];
         
         const data = await response.json();
-        const ids = data.map(item => item.profesional_id);
+        const ids = data.map(item => item.Lashista_id);
         
         if (ids.length === 0) return [];
         
-        const profesionalesResponse = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=in.(${ids.join(',')})&activo=eq.true&select=*`,
+        const LashistaesResponse = await fetch(
+            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&id=in.(${ids.join(',')})&activo=eq.true&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -269,26 +269,26 @@ window.getProfesionalesPorServicio = async function(servicioId) {
             }
         );
         
-        if (!profesionalesResponse.ok) return [];
+        if (!LashistaesResponse.ok) return [];
         
-        return await profesionalesResponse.json();
+        return await LashistaesResponse.json();
         
     } catch (error) {
-        console.error('Error obteniendo profesionales por servicio:', error);
+        console.error('Error obteniendo Lashistaes por servicio:', error);
         return [];
     }
 };
 
 /**
- * Asigna un profesional a un servicio
+ * Asigna un Lashista a un servicio
  */
-window.asignarProfesionalAServicio = async function(servicioId, profesionalId) {
+window.asignarLashistaAServicio = async function(servicioId, LashistaId) {
     try {
         const negocioId = getNegocioId();
-        if (!negocioId || !servicioId || !profesionalId) return false;
+        if (!negocioId || !servicioId || !LashistaId) return false;
         
         const checkResponse = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/servicios_profesionales?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&profesional_id=eq.${profesionalId}&select=id`,
+            `${window.SUPABASE_URL}/rest/v1/servicios_Lashistaes?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&Lashista_id=eq.${LashistaId}&select=id`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -303,7 +303,7 @@ window.asignarProfesionalAServicio = async function(servicioId, profesionalId) {
         }
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/servicios_profesionales`,
+            `${window.SUPABASE_URL}/rest/v1/servicios_Lashistaes`,
             {
                 method: 'POST',
                 headers: {
@@ -315,32 +315,32 @@ window.asignarProfesionalAServicio = async function(servicioId, profesionalId) {
                 body: JSON.stringify({
                     negocio_id: negocioId,
                     servicio_id: servicioId,
-                    profesional_id: profesionalId
+                    Lashista_id: LashistaId
                 })
             }
         );
         
         if (!response.ok) return false;
         
-        console.log('✅ Profesional asignado al servicio');
+        console.log('✅ Lashista asignado al servicio');
         return true;
         
     } catch (error) {
-        console.error('Error asignando profesional:', error);
+        console.error('Error asignando Lashista:', error);
         return false;
     }
 };
 
 /**
- * Remueve la asignación de un profesional a un servicio
+ * Remueve la asignación de un Lashista a un servicio
  */
-window.removerProfesionalDeServicio = async function(servicioId, profesionalId) {
+window.removerLashistaDeServicio = async function(servicioId, LashistaId) {
     try {
         const negocioId = getNegocioId();
-        if (!negocioId || !servicioId || !profesionalId) return false;
+        if (!negocioId || !servicioId || !LashistaId) return false;
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/servicios_profesionales?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&profesional_id=eq.${profesionalId}`,
+            `${window.SUPABASE_URL}/rest/v1/servicios_Lashistaes?negocio_id=eq.${negocioId}&servicio_id=eq.${servicioId}&Lashista_id=eq.${LashistaId}`,
             {
                 method: 'DELETE',
                 headers: {
@@ -352,25 +352,25 @@ window.removerProfesionalDeServicio = async function(servicioId, profesionalId) 
         
         if (!response.ok) return false;
         
-        console.log('✅ Profesional removido del servicio');
+        console.log('✅ Lashista removido del servicio');
         return true;
         
     } catch (error) {
-        console.error('Error removiendo profesional:', error);
+        console.error('Error removiendo Lashista:', error);
         return false;
     }
 };
 
 /**
- * Obtiene todos los profesionales con sus servicios asignados
+ * Obtiene todos los Lashistaes con sus servicios asignados
  */
-window.getProfesionalesConServicios = async function() {
+window.getLashistaesConServicios = async function() {
     try {
         const negocioId = getNegocioId();
         if (!negocioId) return [];
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&activo=eq.true&select=*`,
+            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&activo=eq.true&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -381,11 +381,11 @@ window.getProfesionalesConServicios = async function() {
         
         if (!response.ok) return [];
         
-        const profesionales = await response.json();
+        const Lashistaes = await response.json();
         
-        for (const prof of profesionales) {
+        for (const prof of Lashistaes) {
             const serviciosResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/servicios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${prof.id}&select=servicio_id`,
+                `${window.SUPABASE_URL}/rest/v1/servicios_Lashistaes?negocio_id=eq.${negocioId}&Lashista_id=eq.${prof.id}&select=servicio_id`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -402,10 +402,10 @@ window.getProfesionalesConServicios = async function() {
             }
         }
         
-        return profesionales;
+        return Lashistaes;
         
     } catch (error) {
-        console.error('Error obteniendo profesionales con servicios:', error);
+        console.error('Error obteniendo Lashistaes con servicios:', error);
         return [];
     }
 };
@@ -415,4 +415,4 @@ setTimeout(async () => {
 }, 1000);
 
 console.log('✅ salonServicios inicializado');
-console.log('✅ Funciones de asignación profesional-servicio agregadas');
+console.log('✅ Funciones de asignación Lashista-servicio agregadas');

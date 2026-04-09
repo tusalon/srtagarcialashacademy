@@ -1,8 +1,8 @@
-// components/ServiceSelection.js
+﻿// components/ServiceSelection.js
 
 function ServiceSelection({ onSelect, selectedService }) {
     const services = [
-        { id: 1, name: "💅 Esmaltado semipermanente manos y pies", duration: 60 },
+        { id: 1, name: "💫 Esmaltado semipermanente manos y pies", duration: 60 },
         { id: 2, name: "✨ Refill en manos", duration: 90 },
         { id: 3, name: "🦶 Refill y pedicura", duration: 120 },
         { id: 4, name: "🌸 Refill manos y pedicura con parafina", duration: 180 },
@@ -12,7 +12,7 @@ function ServiceSelection({ onSelect, selectedService }) {
     return (
         <div className="space-y-4 animate-fade-in">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <div className="icon-wand text-pink-500"></div>
+                <div className="icon-wand text-purple-600"></div>
                 1. Elegí tu servicio
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -23,12 +23,12 @@ function ServiceSelection({ onSelect, selectedService }) {
                         className={`
                             p-4 rounded-xl border text-left transition-all duration-200 flex justify-between items-center group
                             ${selectedService?.id === service.id 
-                                ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500 shadow-md' 
-                                : 'border-gray-200 bg-white hover:border-pink-300 hover:shadow-sm'}
+                                ? 'border-purple-600 bg-purple-100 ring-1 ring-purple-600 shadow-md' 
+                                : 'border-gray-200 bg-white hover:border-purple-400 hover:shadow-sm'}
                         `}
                     >
                         <div>
-                            <span className="font-medium text-gray-900 block group-hover:text-pink-600 transition-colors">
+                            <span className="font-medium text-gray-900 block group-hover:text-purple-700 transition-colors">
                                 {service.name}
                             </span>
                         </div>

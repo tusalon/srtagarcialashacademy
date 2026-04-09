@@ -1,4 +1,4 @@
-function WhatsAppButton() {
+﻿function WhatsAppButton() {
     return (
         <a 
             href="https://wa.me/55002272" 

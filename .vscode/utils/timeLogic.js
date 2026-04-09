@@ -1,4 +1,4 @@
-// utils/timeLogic.js - Versión con formato 12h (AM/PM)
+﻿// utils/timeLogic.js - Versión con formato 12h (AM/PM)
 
 // Helper to convert "HH:mm" to minutes since midnight
 function timeToMinutes(timeStr) {

@@ -1,20 +1,20 @@
-{
-  "name": "Yailen Nails",
-  "short_name": "Yailen",
-  "description": "Uñas y belleza - Tu espacio de cuidado personal",
-  "start_url": "/yailennails/",
-  "scope": "/yailennails/",
+﻿{
+  "name": "Srta.García Lash Academy",
+  "short_name": "Srta.García",
+  "description": "Pestañas y belleza - Tu espacio de cuidado personal",
+  "start_url": "/srtagarcialashacademy/",
+  "scope": "/srtagarcialashacademy/",
   "display": "standalone",
-  "background_color": "#ec4899",
-  "theme_color": "#ec4899",
+  "background_color": "#7c3aed",
+  "theme_color": "#7c3aed",
   "icons": [
     {
-      "src": "/yailennails/icons/icon-192x192.png",
+      "src": "/srtagarcialashacademy/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/yailennails/icons/icon-512x512.png",
+      "src": "/srtagarcialashacademy/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

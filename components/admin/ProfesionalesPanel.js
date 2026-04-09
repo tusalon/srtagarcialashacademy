@@ -1,65 +1,65 @@
-// components/admin/ProfesionalesPanel.js
+﻿// components/admin/LashistaesPanel.js
 
-function ProfesionalesPanel() {
-    const [profesionales, setProfesionales] = React.useState([]);
+function LashistaesPanel() {
+    const [Lashistaes, setLashistaes] = React.useState([]);
     const [mostrarForm, setMostrarForm] = React.useState(false);
     const [editando, setEditando] = React.useState(null);
     const [cargando, setCargando] = React.useState(true);
 
     React.useEffect(() => {
-        cargarProfesionales();
+        cargarLashistaes();
     }, []);
 
-    const cargarProfesionales = async () => {
+    const cargarLashistaes = async () => {
         setCargando(true);
         try {
-            console.log('📋 Cargando profesionales...');
-            if (window.salonProfesionales) {
-                const lista = await window.salonProfesionales.getAll(false);
-                console.log('✅ Profesionales obtenidos:', lista);
-                setProfesionales(lista || []);
+            console.log('📋 Cargando Lashistaes...');
+            if (window.salonLashistaes) {
+                const lista = await window.salonLashistaes.getAll(false);
+                console.log('✅ Lashistaes obtenidos:', lista);
+                setLashistaes(lista || []);
             }
         } catch (error) {
-            console.error('Error cargando profesionales:', error);
+            console.error('Error cargando Lashistaes:', error);
         } finally {
             setCargando(false);
         }
     };
 
-    const handleGuardar = async (profesional) => {
+    const handleGuardar = async (Lashista) => {
         try {
-            console.log('💾 Guardando profesional:', profesional);
+            console.log('💾 Guardando Lashista:', Lashista);
             if (editando) {
-                await window.salonProfesionales.actualizar(editando.id, profesional);
+                await window.salonLashistaes.actualizar(editando.id, Lashista);
             } else {
-                await window.salonProfesionales.crear(profesional);
+                await window.salonLashistaes.crear(Lashista);
             }
-            await cargarProfesionales();
+            await cargarLashistaes();
             setMostrarForm(false);
             setEditando(null);
         } catch (error) {
-            console.error('Error guardando profesional:', error);
-            alert('Error al guardar el profesional');
+            console.error('Error guardando Lashista:', error);
+            alert('Error al guardar el Lashista');
         }
     };
 
     const handleEliminar = async (id) => {
-        if (!confirm('¿Eliminar este profesional?')) return;
+        if (!confirm('¿Eliminar este Lashista?')) return;
         try {
-            console.log('🗑️ Eliminando profesional:', id);
-            await window.salonProfesionales.eliminar(id);
-            await cargarProfesionales();
+            console.log('🗑️ Eliminando Lashista:', id);
+            await window.salonLashistaes.eliminar(id);
+            await cargarLashistaes();
         } catch (error) {
-            console.error('Error eliminando profesional:', error);
-            alert('Error al eliminar el profesional');
+            console.error('Error eliminando Lashista:', error);
+            alert('Error al eliminar el Lashista');
         }
     };
 
     const toggleActivo = async (id) => {
-        const profesional = profesionales.find(p => p.id === id);
+        const Lashista = Lashistaes.find(p => p.id === id);
         try {
-            await window.salonProfesionales.actualizar(id, { activo: !profesional.activo });
-            await cargarProfesionales();
+            await window.salonLashistaes.actualizar(id, { activo: !Lashista.activo });
+            await cargarLashistaes();
         } catch (error) {
             console.error('Error cambiando estado:', error);
         }
@@ -78,8 +78,8 @@ function ProfesionalesPanel() {
         return (
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">Cargando profesionales...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                    <p className="text-gray-500 mt-4">Cargando Lashistaes...</p>
                 </div>
             </div>
         );
@@ -88,21 +88,21 @@ function ProfesionalesPanel() {
     return (
         <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">👥 Profesionales</h2>
+                <h2 className="text-xl font-bold">👥 Lashistaes</h2>
                 <button
                     onClick={() => {
                         setEditando(null);
                         setMostrarForm(true);
                     }}
-                    className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
+                    className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
                 >
-                    + Nuevo Profesional
+                    + Nuevo Lashista
                 </button>
             </div>
 
             {mostrarForm && (
-                <ProfesionalForm
-                    profesional={editando}
+                <LashistaForm
+                    Lashista={editando}
                     onGuardar={handleGuardar}
                     onCancelar={() => {
                         setMostrarForm(false);
@@ -112,16 +112,16 @@ function ProfesionalesPanel() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profesionales.length === 0 ? (
+                {Lashistaes.length === 0 ? (
                     <div className="col-span-2 text-center py-8 text-gray-500">
-                        No hay profesionales cargados
+                        No hay Lashistaes cargados
                     </div>
                 ) : (
-                    profesionales.map(p => (
+                    Lashistaes.map(p => (
                         <div key={p.id} className={`border rounded-lg p-4 ${p.activo ? '' : 'opacity-50 bg-gray-50'}`}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-12 h-12 ${p.color || 'bg-amber-600'} rounded-full flex items-center justify-center text-2xl`}>
+                                    <div className={`w-12 h-12 ${p.color || 'bg-purple-700'} rounded-full flex items-center justify-center text-2xl`}>
                                         {p.avatar || '👤'}
                                     </div>
                                     <div>
@@ -183,22 +183,22 @@ function ProfesionalesPanel() {
     );
 }
 
-function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
-    const [form, setForm] = React.useState(profesional || {
+function LashistaForm({ Lashista, onGuardar, onCancelar }) {
+    const [form, setForm] = React.useState(Lashista || {
         nombre: '',
         especialidad: '',
         telefono: '',
         password: '',
         nivel: 1,
-        color: 'bg-amber-600',
+        color: 'bg-purple-700',
         avatar: '👤'
     });
 
-    const avatares = ['👤', '💇', '💅', '👑', '⭐', '🔰'];
+    const avatares = ['👤', '💇', '💫', '👑', '⭐', '🔰'];
     const colores = [
-        { value: 'bg-amber-600', label: 'Ámbar' },
+        { value: 'bg-purple-700', label: 'Ámbar' },
         { value: 'bg-amber-700', label: 'Ámbar Oscuro' },
-        { value: 'bg-pink-500', label: 'Rosa' },
+        { value: 'bg-purple-600', label: 'Rosa' },
         { value: 'bg-purple-500', label: 'Púrpura' },
         { value: 'bg-blue-500', label: 'Azul' },
         { value: 'bg-green-500', label: 'Verde' }
@@ -218,7 +218,7 @@ function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
     return (
         <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold mb-4">
-                {profesional ? '✏️ Editar Profesional' : '➕ Nuevo Profesional'}
+                {Lashista ? '✏️ Editar Lashista' : '➕ Nuevo Lashista'}
             </h3>
             
             <div className="space-y-3">
@@ -324,7 +324,7 @@ function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
             
             <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={onCancelar} className="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Guardar</button>
+                <button type="submit" className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-amber-700">Guardar</button>
             </div>
         </form>
     );

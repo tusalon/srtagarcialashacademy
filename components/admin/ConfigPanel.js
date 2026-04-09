@@ -1,9 +1,9 @@
-// components/admin/ConfigPanel.js - Versión con Fechas Libres y Días Cerrados Globales
+﻿// components/admin/ConfigPanel.js - Versión con Fechas Libres y Días Cerrados Globales
 // SIN DEPENDENCIA DE dias-cerrados.js
 
-function ConfigPanel({ profesionalId, modoRestringido }) {
-    const [profesionales, setProfesionales] = React.useState([]);
-    const [profesionalSeleccionado, setProfesionalSeleccionado] = React.useState(null);
+function ConfigPanel({ LashistaId, modoRestringido }) {
+    const [Lashistaes, setLashistaes] = React.useState([]);
+    const [LashistaSeleccionado, setLashistaSeleccionado] = React.useState(null);
     const [mostrarEditorPorDia, setMostrarEditorPorDia] = React.useState(false);
     const [configGlobal, setConfigGlobal] = React.useState({
         duracion_turnos: 60,
@@ -47,20 +47,20 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
     }, []);
 
     React.useEffect(() => {
-        if (modoRestringido && profesionalId) {
-            setProfesionalSeleccionado(profesionalId);
+        if (modoRestringido && LashistaId) {
+            setLashistaSeleccionado(LashistaId);
         }
-    }, [modoRestringido, profesionalId]);
+    }, [modoRestringido, LashistaId]);
 
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            if (window.salonProfesionales) {
-                const lista = await window.salonProfesionales.getAll(true);
-                setProfesionales(lista || []);
+            if (window.salonLashistaes) {
+                const lista = await window.salonLashistaes.getAll(true);
+                setLashistaes(lista || []);
                 
                 if (!modoRestringido && lista && lista.length > 0) {
-                    setProfesionalSeleccionado(lista[0].id);
+                    setLashistaSeleccionado(lista[0].id);
                 }
             }
             
@@ -81,8 +81,8 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
     };
 
     const abrirEditorPorDia = () => {
-        if (!profesionalSeleccionado) {
-            alert('Seleccioná un profesional primero');
+        if (!LashistaSeleccionado) {
+            alert('Seleccioná un Lashista primero');
             return;
         }
         setMostrarEditorPorDia(true);
@@ -103,7 +103,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
         return (
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
                     <p className="text-gray-500 mt-4">Cargando configuración...</p>
                 </div>
             </div>
@@ -139,7 +139,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                             className={`
                                                 py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center
                                                 ${configGlobal.duracion_turnos === opcion.value
-                                                    ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-300'
+                                                    ? 'bg-purple-700 text-white shadow-md ring-2 ring-amber-300'
                                                     : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}
                                             `}
                                         >
@@ -184,7 +184,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                         className={`
                                             py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center
                                             ${configGlobal.max_antelacion_dias === opcion.value
-                                                ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-300'
+                                                ? 'bg-purple-700 text-white shadow-md ring-2 ring-amber-300'
                                                 : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}
                                         `}
                                     >
@@ -204,7 +204,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                         ...configGlobal, 
                                         modo_24h: e.target.checked
                                     })}
-                                    className="w-5 h-5 text-amber-600"
+                                    className="w-5 h-5 text-purple-700"
                                 />
                                 <span className="text-sm text-gray-700">Modo 24 horas</span>
                             </label>
@@ -212,7 +212,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                         
                         <button
                             onClick={handleGuardarConfigGlobal}
-                            className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition text-sm"
+                            className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition text-sm"
                         >
                             Guardar Configuración Global
                         </button>
@@ -223,48 +223,48 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                 </>
             )}
             
-            {/* SECCIÓN DEL PROFESIONAL */}
+            {/* SECCIÓN DEL Lashista */}
             <div className="mb-6 p-4 border rounded-lg bg-white shadow-sm mt-6">
-                <h3 className="font-semibold text-lg mb-4">👥 Configuración del Profesional</h3>
+                <h3 className="font-semibold text-lg mb-4">👥 Configuración del Lashista</h3>
                 
                 {!modoRestringido && (
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Seleccionar Profesional
+                            Seleccionar Lashista
                         </label>
                         <div className="flex gap-2">
                             <select
-                                value={profesionalSeleccionado || ''}
-                                onChange={(e) => setProfesionalSeleccionado(parseInt(e.target.value))}
+                                value={LashistaSeleccionado || ''}
+                                onChange={(e) => setLashistaSeleccionado(parseInt(e.target.value))}
                                 className="flex-1 border rounded-lg px-3 py-2"
                             >
-                                <option value="">Seleccione un profesional</option>
-                                {profesionales.map(p => (
+                                <option value="">Seleccione un Lashista</option>
+                                {Lashistaes.map(p => (
                                     <option key={p.id} value={p.id}>{p.nombre}</option>
                                 ))}
                             </select>
                             
                             <button
                                 onClick={abrirEditorPorDia}
-                                disabled={!profesionalSeleccionado}
-                                className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!LashistaSeleccionado}
+                                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Horarios por día
                             </button>
                         </div>
-                        {profesionales.length === 0 && !cargando && (
-                            <p className="text-sm text-amber-600 mt-2">
-                                ⚠️ No hay profesionales activos.
+                        {Lashistaes.length === 0 && !cargando && (
+                            <p className="text-sm text-purple-700 mt-2">
+                                ⚠️ No hay Lashistaes activos.
                             </p>
                         )}
                     </div>
                 )}
                 
-                {modoRestringido && profesionalId && (
+                {modoRestringido && LashistaId && (
                     <div className="mb-4">
                         <button
                             onClick={abrirEditorPorDia}
-                            className="w-full bg-amber-600 text-white px-4 py-3 rounded-lg hover:bg-amber-700 font-medium"
+                            className="w-full bg-purple-700 text-white px-4 py-3 rounded-lg hover:bg-amber-700 font-medium"
                         >
                             Configurar mis horarios por día
                         </button>
@@ -272,22 +272,22 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                 )}
 
                 {/* PANEL DE DÍAS LIBRES INDIVIDUALES */}
-                {profesionalSeleccionado && (
+                {LashistaSeleccionado && (
                     <FechasLibresPanel 
-                        profesionalId={profesionalSeleccionado} 
-                        profesionales={profesionales} 
+                        LashistaId={LashistaSeleccionado} 
+                        Lashistaes={Lashistaes} 
                         onActualizar={cargarDatos} 
                     />
                 )}
             </div>
             
             {/* Modal para editor por día */}
-            {mostrarEditorPorDia && profesionalSeleccionado && (
+            {mostrarEditorPorDia && LashistaSeleccionado && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                         <HorariosPorDiaPanel
-                            profesionalId={profesionalSeleccionado}
-                            profesionalNombre={profesionales.find(p => p.id === profesionalSeleccionado)?.nombre || 'Profesional'}
+                            LashistaId={LashistaSeleccionado}
+                            LashistaNombre={Lashistaes.find(p => p.id === LashistaSeleccionado)?.nombre || 'Lashista'}
                             onGuardar={(horarios) => {
                                 setMostrarEditorPorDia(false);
                             }}
@@ -301,18 +301,18 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
 }
 
 // ==========================================
-// COMPONENTE: FECHAS LIBRES POR PROFESIONAL
+// COMPONENTE: FECHAS LIBRES POR Lashista
 // ==========================================
-function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
+function FechasLibresPanel({ LashistaId, Lashistaes, onActualizar }) {
     const [fechas, setFechas] = React.useState([]);
     const [nuevaFecha, setNuevaFecha] = React.useState('');
-    const profesional = profesionales.find(p => p.id === profesionalId);
+    const Lashista = Lashistaes.find(p => p.id === LashistaId);
 
     React.useEffect(() => {
-        if (profesional) {
-            setFechas(profesional.fechas_libres || []);
+        if (Lashista) {
+            setFechas(Lashista.fechas_libres || []);
         }
-    }, [profesionalId, profesional]);
+    }, [LashistaId, Lashista]);
 
     const handleAgregar = async () => {
         if (!nuevaFecha) return;
@@ -334,8 +334,8 @@ function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
 
     const guardarFechas = async (nuevasFechas) => {
         try {
-            if (window.salonProfesionales && window.salonProfesionales.actualizar) {
-                await window.salonProfesionales.actualizar(profesionalId, { fechas_libres: nuevasFechas });
+            if (window.salonLashistaes && window.salonLashistaes.actualizar) {
+                await window.salonLashistaes.actualizar(LashistaId, { fechas_libres: nuevasFechas });
                 if (onActualizar) onActualizar(); 
             }
         } catch (error) {
@@ -347,10 +347,10 @@ function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
     return (
         <div className="mt-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
             <h3 className="font-semibold text-lg text-orange-800 mb-2 flex items-center gap-2">
-                ✈️ Días Libres / Vacaciones de {profesional?.nombre}
+                ✈️ Días Libres / Vacaciones de {Lashista?.nombre}
             </h3>
             <p className="text-sm text-orange-600 mb-4">
-                El profesional NO recibirá turnos estos días.
+                El Lashista NO recibirá turnos estos días.
             </p>
 
             <div className="flex flex-wrap sm:flex-nowrap gap-2 mb-4">
@@ -537,7 +537,7 @@ function DiasCerradosGlobalesPanel() {
                 🚫 Días Cerrados del Local
             </h3>
             <p className="text-sm text-red-600 mb-4">
-                El local completo estará cerrado estos días. <b>Ningún profesional</b> recibirá turnos.
+                El local completo estará cerrado estos días. <b>Ningún Lashista</b> recibirá turnos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-2 mb-4 bg-white p-3 rounded shadow-sm border border-red-100">

@@ -1,4 +1,4 @@
-// utils/api.js - Versión genérica para profesionales (CORREGIDO)
+﻿// utils/api.js - Versión genérica para Lashistaes (CORREGIDO)
 
 console.log('📡 api.js cargado');
 
@@ -50,15 +50,15 @@ async function getBookingsByDate(dateStr) {
 }
 
 /**
- * Fetch bookings for a specific date AND profesional
+ * Fetch bookings for a specific date AND Lashista
  */
-async function getBookingsByDateAndProfesional(dateStr, profesionalId) {
+async function getBookingsByDateAndLashista(dateStr, LashistaId) {
     try {
         const negocioId = getNegocioId();
-        console.log(`🌐 Solicitando turnos para ${dateStr} del profesional ${profesionalId} (negocio: ${negocioId})`);
+        console.log(`🌐 Solicitando turnos para ${dateStr} del Lashista ${LashistaId} (negocio: ${negocioId})`);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}?negocio_id=eq.${negocioId}&fecha=eq.${dateStr}&profesional_id=eq.${profesionalId}&estado=neq.Cancelado&select=*`,
+            `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}?negocio_id=eq.${negocioId}&fecha=eq.${dateStr}&Lashista_id=eq.${LashistaId}&estado=neq.Cancelado&select=*`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -93,8 +93,8 @@ async function createBooking(bookingData) {
             cliente_whatsapp: bookingData.cliente_whatsapp,
             servicio: bookingData.servicio,
             duracion: bookingData.duracion,
-            profesional_id: bookingData.trabajador_id || bookingData.profesional_id,
-            profesional_nombre: bookingData.trabajador_nombre || bookingData.profesional_nombre,
+            Lashista_id: bookingData.trabajador_id || bookingData.Lashista_id,
+            Lashista_nombre: bookingData.trabajador_nombre || bookingData.Lashista_nombre,
             fecha: bookingData.fecha,
             hora_inicio: bookingData.hora_inicio,
             hora_fin: bookingData.hora_fin,
@@ -201,8 +201,8 @@ async function updateBookingStatus(id, newStatus) {
 
 // Hacer funciones globales
 window.getBookingsByDate = getBookingsByDate;
-window.getBookingsByDateAndProfesional = getBookingsByDateAndProfesional;
-window.getBookingsByDateAndWorker = getBookingsByDateAndProfesional;
+window.getBookingsByDateAndLashista = getBookingsByDateAndLashista;
+window.getBookingsByDateAndWorker = getBookingsByDateAndLashista;
 window.createBooking = createBooking;
 window.getAllBookings = getAllBookings;
 window.updateBookingStatus = updateBookingStatus;

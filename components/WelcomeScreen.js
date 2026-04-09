@@ -1,4 +1,4 @@
-// components/WelcomeScreen.js - Versión con REDES SOCIALES (CORREGIDA - SIN DESBORDAMIENTO)
+﻿// components/WelcomeScreen.js - Versión con REDES SOCIALES (CORREGIDA - SIN DESBORDAMIENTO)
 
 function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
     const [config, setConfig] = React.useState(null);
@@ -22,14 +22,14 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
 
     if (cargando || !imagenCargada) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-pink-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+            <div className="min-h-screen flex items-center justify-center bg-purple-100">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
             </div>
         );
     }
 
-    const colorPrimario = config?.color_primario || '#ec4899';
-    const sticker = config?.especialidad?.toLowerCase().includes('uñas') ? '💅' : 
+    const colorPrimario = config?.color_primario || '#7c3aed';
+    const sticker = config?.especialidad?.toLowerCase().includes('uñas') ? '💫' : 
                     config?.especialidad?.toLowerCase().includes('pelo') ? '💇‍♀️' : 
                     config?.especialidad?.toLowerCase().includes('belleza') ? '🌸' : '💖';
 
@@ -121,7 +121,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
             {onGoBack && (
                 <button
                     onClick={onGoBack}
-                    className="fixed top-4 left-4 z-20 w-10 h-10 bg-pink-500/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors border border-pink-300"
+                    className="fixed top-4 left-4 z-20 w-10 h-10 bg-purple-600/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors border border-purple-400"
                     title="Volver"
                 >
                     <i className="icon-arrow-left text-white text-xl"></i>
@@ -130,18 +130,18 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
 
             {/* Contenido scrolleable */}
             <div className="relative z-10 min-h-screen flex items-start justify-center py-16 px-4">
-                <div className="w-full max-w-2xl bg-white/20 backdrop-blur-md p-6 sm:p-10 rounded-3xl shadow-2xl border border-pink-300/50 my-auto">
+                <div className="w-full max-w-2xl bg-white/20 backdrop-blur-md p-6 sm:p-10 rounded-3xl shadow-2xl border border-purple-400/50 my-auto">
                     <div className="text-center space-y-6">
                         {/* Logo o sticker */}
                         {config?.logo_url ? (
                             <img 
                                 src={config.logo_url} 
                                 alt={config.nombre} 
-                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain mx-auto rounded-2xl shadow-2xl ring-4 ring-pink-300/50"
+                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain mx-auto rounded-2xl shadow-2xl ring-4 ring-purple-400/50"
                             />
                         ) : (
                             <div 
-                                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl mx-auto flex items-center justify-center shadow-2xl ring-4 ring-pink-300/50"
+                                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl mx-auto flex items-center justify-center shadow-2xl ring-4 ring-purple-400/50"
                                 style={{ backgroundColor: colorPrimario }}
                             >
                                 <span className="text-4xl sm:text-5xl">{sticker}</span>
@@ -153,7 +153,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight drop-shadow-lg">
                                 Bienvenida a
                             </h1>
-                            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pink-300 break-words px-2">
+                            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-purple-400 break-words px-2">
                                 {config?.nombre || 'Mi Salón'}
                             </div>
                         </div>
@@ -187,7 +187,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
                                 {tieneInstagram && (
                                     <button
                                         onClick={abrirInstagram}
-                                        className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 rounded-full flex items-center justify-center hover:scale-110 transition-all transform hover:shadow-xl border-2 border-white/50 group relative"
+                                        className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-600 via-purple-600 to-orange-400 rounded-full flex items-center justify-center hover:scale-110 transition-all transform hover:shadow-xl border-2 border-white/50 group relative"
                                         title="Instagram"
                                     >
                                         <i className="icon-instagram text-white text-xl sm:text-2xl"></i>
@@ -215,7 +215,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
                         <div className="pt-4 sm:pt-6">
                             <button 
                                 onClick={onStart}
-                                className="text-white text-base sm:text-lg font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-full shadow-2xl transition-all transform hover:scale-110 active:scale-95 flex items-center justify-center gap-2 mx-auto border-2 border-pink-300 w-full sm:w-auto"
+                                className="text-white text-base sm:text-lg font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-full shadow-2xl transition-all transform hover:scale-110 active:scale-95 flex items-center justify-center gap-2 mx-auto border-2 border-purple-400 w-full sm:w-auto"
                                 style={{ backgroundColor: colorPrimario }}
                             >
                                 <span className="text-lg sm:text-xl">💖</span>
@@ -235,7 +235,7 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
             </div>
 
             {/* Stickers flotantes decorativos (fijos) */}
-            <div className="fixed bottom-4 left-4 text-3xl sm:text-4xl opacity-30 rotate-12 select-none pointer-events-none">💅</div>
+            <div className="fixed bottom-4 left-4 text-3xl sm:text-4xl opacity-30 rotate-12 select-none pointer-events-none">💫</div>
             <div className="fixed top-20 right-4 text-3xl sm:text-4xl opacity-30 -rotate-12 select-none pointer-events-none">🌸</div>
         </div>
     );

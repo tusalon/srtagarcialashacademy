@@ -1,4 +1,4 @@
-// sw.js - Service Worker para Uñas Mágicas
+﻿// sw.js - Service Worker para Uñas Mágicas
 
 const CACHE_NAME = 'unas-magicas-v1';
 const urlsToCache = [

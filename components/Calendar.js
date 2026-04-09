@@ -1,35 +1,26 @@
-// components/Calendar.js - VERSIÓN CORREGIDA
-// Los días que el profesional NO trabaja se muestran como NO DISPONIBLES desde el principio
+﻿// components/Calendar.js - VERSIÓN CON DÍAS CERRADOS
 
-function Calendar({ onDateSelect, selectedDate, profesional }) {
+function Calendar({ onDateSelect, selectedDate, Lashista }) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [diasLaborales, setDiasLaborales] = React.useState([]);
     const [diasCerrados, setDiasCerrados] = React.useState([]);
-    const [cargandoHorarios, setCargandoHorarios] = React.useState(true);
-    const [errorCargando, setErrorCargando] = React.useState(null);
+    const [cargandoHorarios, setCargandoHorarios] = React.useState(false);
 
     React.useEffect(() => {
-        if (!profesional) {
-            setCargandoHorarios(false);
-            return;
-        }
+        if (!Lashista) return;
         
         const cargarDisponibilidad = async () => {
             setCargandoHorarios(true);
-            setErrorCargando(null);
             try {
-                console.log(`📅 Cargando días laborales de ${profesional.nombre}...`);
-                const horarios = await window.salonConfig.getHorariosProfesional(profesional.id);
-                console.log(`✅ Días laborales de ${profesional.nombre}:`, horarios.dias);
+                const horarios = await window.salonConfig.getHorariosLashista(Lashista.id);
+                console.log(`📅 Días laborales de ${Lashista.nombre}:`, horarios.dias);
                 setDiasLaborales(horarios.dias || []);
                 
-                // Cargar días cerrados globales
                 const diasCerradosList = await window.getDiasCerrados();
                 setDiasCerrados(diasCerradosList.map(d => d.fecha));
                 
             } catch (error) {
                 console.error('Error cargando disponibilidad:', error);
-                setErrorCargando('Error al cargar la disponibilidad del profesional');
                 setDiasLaborales([]);
                 setDiasCerrados([]);
             } finally {
@@ -39,7 +30,6 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
         
         cargarDisponibilidad();
         
-        // Escuchar cambios en días cerrados
         const handleActualizacion = () => cargarDisponibilidad();
         window.addEventListener('diasCerradosActualizados', handleActualizacion);
         
@@ -47,7 +37,7 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
             window.removeEventListener('diasCerradosActualizados', handleActualizacion);
         };
         
-    }, [profesional]);
+    }, [Lashista]);
 
     const formatDate = (date) => {
         const y = date.getFullYear();
@@ -65,28 +55,37 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
     };
 
     const isPastDate = (date) => {
+        const now = new Date();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return date < today;
+        
+        const todayStr = getTodayLocalString();
+        const dateStr = formatDate(date);
+        
+        if (date < today) return true;
+        
+        if (dateStr === todayStr) {
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+            
+            const LAST_SLOT_HOUR = 20;
+            const LAST_SLOT_MINUTES = 0;
+            
+            if (currentHour > LAST_SLOT_HOUR) return true;
+            if (currentHour === LAST_SLOT_HOUR && currentMinutes > LAST_SLOT_MINUTES) return true;
+        }
+        
+        return false;
     };
 
-    // 🔥 FUNCIÓN CORREGIDA: Verifica si el profesional trabaja este día
-    const profesionalTrabajaEsteDia = (date) => {
-        if (!profesional) return true;
+    const LashistaTrabajaEsteDia = (date) => {
+        if (!Lashista) return true;
         
-        // Si no hay días laborales configurados, asumir que trabaja todos los días
-        if (!diasLaborales || diasLaborales.length === 0) {
-            console.log(`⚠️ ${profesional.nombre} - Sin configuración de días, asumiendo que trabaja`);
-            return true;
-        }
+        if (diasLaborales.length === 0) return true;
         
         const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
         const diaSemana = diasSemana[date.getDay()];
-        const trabaja = diasLaborales.includes(diaSemana);
-        
-        console.log(`📅 ${profesional.nombre} - ${diaSemana}: ${trabaja ? 'TRABAJA ✅' : 'NO TRABAJA ❌'}`);
-        
-        return trabaja;
+        return diasLaborales.includes(diaSemana);
     };
 
     const esDiaCerrado = (date) => {
@@ -115,13 +114,10 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
         
         const days = [];
         
-        // Días del mes anterior para completar la primera semana
-        const firstDayOfWeek = firstDay.getDay(); // 0 = domingo
-        for (let i = 0; i < firstDayOfWeek; i++) {
+        for (let i = 0; i < firstDay.getDay(); i++) {
             days.push(null);
         }
         
-        // Días del mes actual
         for (let i = 1; i <= lastDay.getDate(); i++) {
             days.push(new Date(year, month, i));
         }
@@ -132,43 +128,21 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
     const days = getDaysInMonth();
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    // Mostrar loading mientras se cargan los horarios
     if (cargandoHorarios) {
         return (
             <div className="space-y-4 animate-fade-in">
                 <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
                     <span className="text-2xl">📅</span>
                     3. Seleccioná una fecha
-                    {profesional && (
-                        <span className="text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full ml-2">
-                            con {profesional.nombre}
+                    {Lashista && (
+                        <span className="text-sm bg-purple-200 text-pink-700 px-3 py-1 rounded-full ml-2">
+                            con {Lashista.nombre}
                         </span>
                     )}
                 </h2>
                 <div className="text-center py-8">
-                    <div className="animate-spin h-8 w-8 border-b-2 border-pink-500 rounded-full mx-auto"></div>
-                    <p className="text-pink-400 mt-4">Cargando días disponibles...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (errorCargando) {
-        return (
-            <div className="space-y-4 animate-fade-in">
-                <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
-                    <span className="text-2xl">📅</span>
-                    3. Seleccioná una fecha
-                </h2>
-                <div className="text-center p-6 bg-red-50 rounded-xl border border-red-200">
-                    <div className="text-4xl mb-3">⚠️</div>
-                    <p className="text-red-600">{errorCargando}</p>
-                    <button 
-                        onClick={() => window.location.reload()} 
-                        className="mt-3 text-sm text-pink-600 underline"
-                    >
-                        Reintentar
-                    </button>
+                    <div className="animate-spin h-8 w-8 border-b-2 border-purple-600 rounded-full mx-auto"></div>
+                    <p className="text-purple-500 mt-4">Cargando disponibilidad...</p>
                 </div>
             </div>
         );
@@ -179,23 +153,23 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
             <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
                 <span className="text-2xl">📅</span>
                 3. Seleccioná una fecha
-                {profesional && (
-                    <span className="text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full ml-2">
-                        con {profesional.nombre}
+                {Lashista && (
+                    <span className="text-sm bg-purple-200 text-pink-700 px-3 py-1 rounded-full ml-2">
+                        con {Lashista.nombre}
                     </span>
                 )}
                 {selectedDate && (
-                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full ml-2">
+                    <span className="text-xs bg-purple-200 text-pink-700 px-2 py-1 rounded-full ml-2">
                         ✓ Fecha seleccionada
                     </span>
                 )}
             </h2>
             
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl border-2 border-pink-200 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-pink-100 border-b border-pink-200">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl border-2 border-purple-300 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-100 to-purple-200 border-b border-purple-300">
                     <button 
                         onClick={prevMonth} 
-                        className="p-2 hover:bg-white/50 rounded-full transition-colors text-pink-600"
+                        className="p-2 hover:bg-white/50 rounded-full transition-colors text-purple-700"
                         title="Mes anterior"
                     >
                         ◀
@@ -205,7 +179,7 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
                     </span>
                     <button 
                         onClick={nextMonth} 
-                        className="p-2 hover:bg-white/50 rounded-full transition-colors text-pink-600"
+                        className="p-2 hover:bg-white/50 rounded-full transition-colors text-purple-700"
                         title="Mes siguiente"
                     >
                         ▶
@@ -215,7 +189,7 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
                 <div className="p-4">
                     <div className="grid grid-cols-7 mb-2 text-center">
                         {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((d, i) => (
-                            <div key={i} className={`text-xs font-medium py-1 ${d === 'D' ? 'text-pink-400' : 'text-pink-600'}`}>
+                            <div key={i} className={`text-xs font-medium py-1 ${d === 'D' ? 'text-purple-500' : 'text-purple-700'}`}>
                                 {d}
                             </div>
                         ))}
@@ -229,39 +203,34 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
                             const past = isPastDate(date);
                             const selected = selectedDate === dateStr;
                             
-                            // 🔥 VERIFICACIONES CORREGIDAS
-                            const profesionalTrabaja = profesionalTrabajaEsteDia(date);
+                            const LashistaTrabaja = LashistaTrabajaEsteDia(date);
                             const cerrado = esDiaCerrado(date);
                             
-                            // Un día está disponible SOLO si:
-                            // 1. No es pasado
-                            // 2. El profesional trabaja ese día
-                            // 3. No es un día cerrado global
-                            const available = !past && profesionalTrabaja && !cerrado;
+                            const available = !past && LashistaTrabaja && !cerrado;
                             
                             let className = "h-10 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-all relative";
                             
                             if (selected) {
-                                className += " bg-pink-500 text-white shadow-md scale-105 ring-2 ring-pink-300";
+                                className += " bg-purple-600 text-white shadow-md scale-105 ring-2 ring-purple-400";
                             } else if (!available) {
-                                className += " text-pink-300 cursor-not-allowed bg-pink-50/50";
+                                className += " text-purple-400 cursor-not-allowed bg-purple-100/50";
                             } else {
-                                className += " text-pink-700 hover:bg-pink-100 hover:text-pink-600 hover:scale-105 cursor-pointer";
+                                className += " text-pink-700 hover:bg-purple-200 hover:text-purple-700 hover:scale-105 cursor-pointer";
                             }
                             
-                            // 🔥 MENSAJES EXPLICATIVOS PARA CADA TIPO DE DÍA NO DISPONIBLE
                             let title = "";
                             if (cerrado) {
                                 title = "🚫 Día cerrado (feriado/vacaciones)";
+                            } else if (past && dateStr === getTodayLocalString()) {
+                                title = "Hoy ya no hay horarios disponibles";
                             } else if (past) {
-                                title = "📅 Fecha pasada";
-                            } else if (!profesionalTrabaja && profesional) {
+                                title = "Fecha pasada";
+                            } else if (!LashistaTrabaja && Lashista) {
                                 const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
                                 const diaSemana = diasSemana[date.getDay()];
-                                const diaCapitalizado = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
-                                title = `${profesional.nombre} no trabaja los ${diaCapitalizado}s`;
+                                title = `${Lashista.nombre} no trabaja los ${diaSemana}s`;
                             } else {
-                                title = "✅ Disponible";
+                                title = "Disponible";
                             }
                             
                             return (
@@ -276,11 +245,8 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
                                     {cerrado && (
                                         <span className="absolute top-0 right-0 text-[10px] text-red-500">🚫</span>
                                     )}
-                                    {!profesionalTrabaja && !cerrado && !past && profesional && (
-                                        <span className="absolute top-0 right-0 text-[10px] text-pink-300">⛔</span>
-                                    )}
                                     {available && !selected && !cerrado && (
-                                        <span className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-pink-400 rounded-full"></span>
+                                        <span className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-purple-500 rounded-full"></span>
                                     )}
                                 </button>
                             );
@@ -289,46 +255,34 @@ function Calendar({ onDateSelect, selectedDate, profesional }) {
                 </div>
             </div>
 
-            {/* 🔥 LEYENDA EXPLICATIVA */}
-            {profesional && (
-                <div className="text-xs text-pink-600 bg-pink-50 p-3 rounded-lg border border-pink-200">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-pink-400 text-sm">📅</span>
-                        <span className="font-medium">Días que trabaja {profesional.nombre}:</span>
-                    </div>
-                    <div className="mb-2">
-                        {diasLaborales.length > 0 
-                            ? diasLaborales.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
-                            : '⚠️ Todos los días (sin configuración específica - contactá a la administradora)'}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-pink-200">
-                        <div className="flex items-center gap-1">
-                            <span className="w-3 h-3 bg-pink-500 rounded-full"></span>
-                            <span>Disponible</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <span className="w-3 h-3 bg-pink-200 rounded-full"></span>
-                            <span>No disponible</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <span className="w-3 h-3 bg-red-300 rounded-full"></span>
-                            <span>Día cerrado</span>
-                        </div>
-                        {diasLaborales.length > 0 && (
-                            <div className="flex items-center gap-1">
-                                <span className="text-pink-400 text-xs">⛔</span>
-                                <span>No trabaja ese día</span>
-                            </div>
-                        )}
+            {Lashista && (
+                <div className="text-xs text-purple-700 bg-purple-100 p-3 rounded-lg border border-purple-300">
+                    <div className="flex items-center gap-2">
+                        <span className="text-purple-500 text-lg">📅</span>
+                        <span>
+                            <strong>Días que trabaja {Lashista.nombre}:</strong>{' '}
+                            {diasLaborales.length > 0 
+                                ? diasLaborales.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
+                                : 'Todos los días (sin configuración específica)'}
+                        </span>
                     </div>
                     {diasCerrados.length > 0 && (
                         <div className="flex items-center gap-2 mt-2">
-                            <span className="text-red-400 text-sm">🚫</span>
+                            <span className="text-red-400 text-lg">🚫</span>
                             <span>
-                                <strong>Días cerrados:</strong> {diasCerrados.length} día(s) no disponible(s)
+                                <strong>Días cerrados:</strong>{' '}
+                                {diasCerrados.length} día(s) no disponible(s)
                             </span>
                         </div>
                     )}
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="w-3 h-3 bg-purple-600 rounded-full"></span>
+                        <span>Disponible</span>
+                        <span className="w-3 h-3 bg-purple-300 rounded-full ml-3"></span>
+                        <span>No disponible</span>
+                        <span className="w-3 h-3 bg-red-300 rounded-full ml-3"></span>
+                        <span>Día cerrado</span>
+                    </div>
                 </div>
             )}
         </div>

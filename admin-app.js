@@ -1,6 +1,5 @@
-// admin-app.js - Panel de administración (VERSIÓN GENÉRICA)
+﻿// admin-app.js - Panel de administración (VERSIÓN CORREGIDA CON HORARIOS POR DÍA)
 // CON BOTÓN DE NUEVA RESERVA MANUAL, CALENDARIO DE DISPONIBILIDAD
-// SIN DEPENDENCIA DE dias-cerrados.js - OBTIENE DÍAS CERRADOS DIRECTAMENTE DE SUPABASE
 
 console.log('🚀 ADMIN-APP.JS - Panel de administración con Nueva Reserva y Calendario Disponibilidad');
 
@@ -192,7 +191,7 @@ async function marcarTurnosCompletados() {
         console.log('🕐 Hora LOCAL actual:', `${horaActual}:${minutosActuales}`);
         
         const responsePasados = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=lt.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,profesional_nombre`,
+            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=lt.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -209,7 +208,7 @@ async function marcarTurnosCompletados() {
         const turnosPasados = await responsePasados.json();
         
         const responseHoy = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=eq.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,profesional_nombre`,
+            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=eq.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -310,7 +309,7 @@ function AdminApp() {
     
     const [userRole, setUserRole] = React.useState('admin');
     const [userNivel, setUserNivel] = React.useState(3);
-    const [profesional, setProfesional] = React.useState(null);
+    const [Lashista, setLashista] = React.useState(null);
     const [nombreNegocio, setNombreNegocio] = React.useState('Mi Negocio');
     const [logoNegocio, setLogoNegocio] = React.useState(null);
     
@@ -329,23 +328,23 @@ function AdminApp() {
         cliente_nombre: '',
         cliente_whatsapp: '',
         servicio: '',
-        profesional_id: '',
+        Lashista_id: '',
         fecha: '',
         hora_inicio: '',
         requiereAnticipo: false
     });
     
-    // 🔥 Estado para el modal de disponibilidad
+    // Estado para el modal de disponibilidad
     const [showDisponibilidadModal, setShowDisponibilidadModal] = React.useState(false);
     const [disponibilidadFecha, setDisponibilidadFecha] = React.useState(new Date());
     const [disponibilidadHoras, setDisponibilidadHoras] = React.useState([]);
     const [disponibilidadCargando, setDisponibilidadCargando] = React.useState(false);
     const [disponibilidadDias, setDisponibilidadDias] = React.useState({});
     const [diasCerradosFechas, setDiasCerradosFechas] = React.useState([]);
-    const [profesionalSeleccionadoDispo, setProfesionalSeleccionadoDispo] = React.useState(null);
+    const [LashistaSeleccionadoDispo, setLashistaSeleccionadoDispo] = React.useState(null);
 
     const [serviciosList, setServiciosList] = React.useState([]);
-    const [profesionalesList, setProfesionalesList] = React.useState([]);
+    const [LashistaesList, setLashistaesList] = React.useState([]);
     const [horariosDisponibles, setHorariosDisponibles] = React.useState([]);
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [diasLaborales, setDiasLaborales] = React.useState([]);
@@ -412,17 +411,17 @@ function AdminApp() {
     // DETECTAR ROL DEL USUARIO
     // ============================================
     React.useEffect(() => {
-        const profesionalAuth = window.getProfesionalAutenticado?.();
-        if (profesionalAuth) {
-            console.log('👤 Usuario detectado como profesional:', profesionalAuth);
-            setUserRole('profesional');
-            setProfesional(profesionalAuth);
-            setUserNivel(profesionalAuth.nivel || 1);
-            setProfesionalSeleccionadoDispo(profesionalAuth.id);
+        const LashistaAuth = window.getLashistaAutenticado?.();
+        if (LashistaAuth) {
+            console.log('👤 Usuario detectado como Lashista:', LashistaAuth);
+            setUserRole('Lashista');
+            setLashista(LashistaAuth);
+            setUserNivel(LashistaAuth.nivel || 1);
+            setLashistaSeleccionadoDispo(LashistaAuth.id);
             
             setNuevaReservaData(prev => ({
                 ...prev,
-                profesional_id: profesionalAuth.id
+                Lashista_id: LashistaAuth.id
             }));
         } else {
             console.log('👑 Usuario detectado como admin');
@@ -437,26 +436,26 @@ function AdminApp() {
                 const servicios = await window.salonServicios.getAll(true);
                 setServiciosList(servicios || []);
             }
-            if (window.salonProfesionales) {
-                const profesionales = await window.salonProfesionales.getAll(true);
-                setProfesionalesList(profesionales || []);
+            if (window.salonLashistaes) {
+                const Lashistaes = await window.salonLashistaes.getAll(true);
+                setLashistaesList(Lashistaes || []);
             }
         };
         cargarDatosModal();
     }, []);
 
-    // 🔥 CARGAR DÍAS CERRADOS AL INICIO
+    // CARGAR DÍAS CERRADOS AL INICIO
     React.useEffect(() => {
         cargarDiasCerradosDirecto();
     }, []);
 
     React.useEffect(() => {
         const cargarDiasLaborales = async () => {
-            if (nuevaReservaData.profesional_id) {
+            if (nuevaReservaData.Lashista_id) {
                 try {
-                    const horarios = await window.salonConfig.getHorariosProfesional(nuevaReservaData.profesional_id);
+                    const horarios = await window.salonConfig.getHorariosLashista(nuevaReservaData.Lashista_id);
                     setDiasLaborales(horarios.dias || []);
-                    await cargarDisponibilidadMes(currentDate, nuevaReservaData.profesional_id);
+                    await cargarDisponibilidadMes(currentDate, nuevaReservaData.Lashista_id);
                 } catch (error) {
                     console.error('Error cargando días laborales:', error);
                     setDiasLaborales([]);
@@ -464,18 +463,21 @@ function AdminApp() {
             }
         };
         cargarDiasLaborales();
-    }, [nuevaReservaData.profesional_id]);
+    }, [nuevaReservaData.Lashista_id]);
 
-    // 🔥 CARGAR DÍAS CERRADOS CUANDO SE ABRE EL MODAL
+    // CARGAR DÍAS CERRADOS CUANDO SE ABRE EL MODAL
     React.useEffect(() => {
         if (showNuevaReservaModal) {
             cargarDiasCerradosDirecto();
         }
     }, [showNuevaReservaModal]);
 
+    // ============================================
+    // FUNCIÓN CORREGIDA PARA CARGAR HORARIOS (CON ZONA HORARIA)
+    // ============================================
     React.useEffect(() => {
         const cargarHorarios = async () => {
-            if (!nuevaReservaData.profesional_id || !nuevaReservaData.fecha || !nuevaReservaData.servicio) {
+            if (!nuevaReservaData.Lashista_id || !nuevaReservaData.fecha || !nuevaReservaData.servicio) {
                 setHorariosDisponibles([]);
                 return;
             }
@@ -484,13 +486,56 @@ function AdminApp() {
                 const servicio = serviciosList.find(s => s.nombre === nuevaReservaData.servicio);
                 if (!servicio) return;
 
-                const horarios = await window.salonConfig.getHorariosProfesional(nuevaReservaData.profesional_id);
-                const horasTrabajo = horarios.horas || [];
+                // OBTENER HORARIOS DEL Lashista
+                const horarios = await window.salonConfig.getHorariosLashista(nuevaReservaData.Lashista_id);
                 
-                const slotsTrabajo = horasTrabajo.map(indice => indiceToHoraLegible(indice));
+                // USAR horariosPorDia en lugar de horas (lista plana)
+                const horariosPorDia = horarios.horariosPorDia || {};
                 
+                // 🔥 CORREGIDO: Forzar fecha en hora local (sin UTC)
+                const partes = nuevaReservaData.fecha.split('-');
+                const año = parseInt(partes[0]);
+                const mes = parseInt(partes[1]) - 1;
+                const día = parseInt(partes[2]);
+                const fechaSeleccionada = new Date(año, mes, día);
+                
+                const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+                let diaSemana = diasSemana[fechaSeleccionada.getDay()];
+                
+                // Normalizar: eliminar acentos para comparar con la BD
+                const normalizarDia = (dia) => {
+                    return dia.toLowerCase()
+                        .replace(/á/g, 'a')
+                        .replace(/é/g, 'e')
+                        .replace(/í/g, 'i')
+                        .replace(/ó/g, 'o')
+                        .replace(/ú/g, 'u')
+                        .replace(/ñ/g, 'n');
+                };
+                
+                diaSemana = normalizarDia(diaSemana);
+                
+                console.log(`📅 Fecha: ${nuevaReservaData.fecha}`);
+                console.log(`📅 Día normalizado: ${diaSemana}`);
+                console.log(`📋 Horarios configurados para este día:`, horariosPorDia[diaSemana] || []);
+                
+                // Obtener los índices de horario para el día específico
+                const indicesDelDia = horariosPorDia[diaSemana] || [];
+                
+                if (indicesDelDia.length === 0) {
+                    console.log(`⚠️ No hay horarios configurados para ${diaSemana}`);
+                    setHorariosDisponibles([]);
+                    return;
+                }
+                
+                // Convertir índices a horas legibles
+                const slotsTrabajo = indicesDelDia.map(indice => indiceToHoraLegible(indice));
+                
+                console.log(`📋 Slots base para ${diaSemana}:`, slotsTrabajo);
+                
+                // Obtener reservas existentes
                 const response = await fetch(
-                    `${window.SUPABASE_URL}/rest/v1/reservas?fecha=eq.${nuevaReservaData.fecha}&profesional_id=eq.${nuevaReservaData.profesional_id}&estado=neq.Cancelado&select=hora_inicio,hora_fin`,
+                    `${window.SUPABASE_URL}/rest/v1/reservas?fecha=eq.${nuevaReservaData.fecha}&Lashista_id=eq.${nuevaReservaData.Lashista_id}&estado=neq.Cancelado&select=hora_inicio,hora_fin`,
                     {
                         headers: {
                             'apikey': window.SUPABASE_ANON_KEY,
@@ -510,6 +555,7 @@ function AdminApp() {
                 const hoy = getCurrentLocalDate();
                 const esHoy = nuevaReservaData.fecha === hoy;
 
+                // Filtrar horarios disponibles
                 const disponibles = slotsTrabajo.filter(slot => {
                     const [horas, minutos] = slot.split(':').map(Number);
                     const slotStart = horas * 60 + minutos;
@@ -534,6 +580,7 @@ function AdminApp() {
                     return (hA * 60 + mA) - (hB * 60 + mB);
                 });
 
+                console.log(`🎯 Horarios disponibles para ${diaSemana}:`, disponibles);
                 setHorariosDisponibles(disponibles);
 
             } catch (error) {
@@ -543,16 +590,20 @@ function AdminApp() {
         };
 
         cargarHorarios();
-    }, [nuevaReservaData.profesional_id, nuevaReservaData.fecha, nuevaReservaData.servicio, serviciosList]);
+    }, [nuevaReservaData.Lashista_id, nuevaReservaData.fecha, nuevaReservaData.servicio, serviciosList]);
 
-    const cargarDisponibilidadMes = async (fecha, profesionalId) => {
-        if (!profesionalId) return;
+    // ============================================
+    // FUNCIONES DE DISPONIBILIDAD
+    // ============================================
+    
+    const cargarDisponibilidadMes = async (fecha, LashistaId) => {
+        if (!LashistaId) return;
         
         try {
             const year = fecha.getFullYear();
             const month = fecha.getMonth();
             
-            const horarios = await window.salonConfig.getHorariosProfesional(profesionalId);
+            const horarios = await window.salonConfig.getHorariosLashista(LashistaId);
             const horasTrabajo = horarios.horas || [];
             
             if (horasTrabajo.length === 0) {
@@ -567,7 +618,7 @@ function AdminApp() {
             const fechaFin = ultimoDia.toISOString().split('T')[0];
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&profesional_id=eq.${profesionalId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
+                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&Lashista_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -592,7 +643,8 @@ function AdminApp() {
             for (let d = 1; d <= diasEnMes; d++) {
                 const fechaStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
                 
-                let tieneDisponibilidad = false;
+                let horariosOcupados = 0;
+                const reservasDia = reservasPorFecha[fechaStr] || [];
                 
                 for (const horaIndice of horasTrabajo) {
                     const slotStr = indiceToHoraLegible(horaIndice);
@@ -600,19 +652,18 @@ function AdminApp() {
                     const slotStart = horas * 60 + minutos;
                     const slotEnd = slotStart + 60;
                     
-                    const reservasDia = reservasPorFecha[fechaStr] || [];
                     const tieneConflicto = reservasDia.some(reserva => {
                         const reservaStart = timeToMinutes(reserva.hora_inicio);
                         const reservaEnd = timeToMinutes(reserva.hora_fin);
                         return (slotStart < reservaEnd) && (slotEnd > reservaStart);
                     });
                     
-                    if (!tieneConflicto) {
-                        tieneDisponibilidad = true;
-                        break;
+                    if (tieneConflicto) {
+                        horariosOcupados++;
                     }
                 }
                 
+                const tieneDisponibilidad = horariosOcupados < horasTrabajo.length;
                 disponibilidad[fechaStr] = tieneDisponibilidad;
             }
             
@@ -622,30 +673,29 @@ function AdminApp() {
         }
     };
 
-    // 🔥 FUNCIÓN PARA CARGAR DISPONIBILIDAD DEL MES EN EL MODAL
-    const cargarDisponibilidadDelMes = async (fecha, profesionalId = null) => {
-        if (!profesionalId && profesionalesList.length > 0) {
-            profesionalId = profesionalesList[0]?.id;
+    const cargarDisponibilidadDelMes = async (fecha, LashistaId = null) => {
+        if (!LashistaId && LashistaesList.length > 0) {
+            LashistaId = LashistaesList[0]?.id;
         }
-        if (!profesionalId) return;
+        if (!LashistaId) return;
         
         setDisponibilidadCargando(true);
         try {
             const year = fecha.getFullYear();
             const month = fecha.getMonth();
             
-            const horarios = await window.salonConfig.getHorariosProfesional(profesionalId);
+            const horarios = await window.salonConfig.getHorariosLashista(LashistaId);
             const horasTrabajo = horarios.horas || [];
-            const diasTrabajo = horarios.dias || []; 
+            const diasTrabajo = horarios.dias || [];
+            const horariosPorDia = horarios.horariosPorDia || {};
             
-            const profesionalObj = profesionalesList.find(p => p.id === profesionalId);
-            const fechasLibresPersonales = profesionalObj?.fechas_libres || [];
+            console.log('=========================================');
+            console.log(`📊 Lashista ID: ${LashistaId}`);
+            console.log(`📊 Horarios por día:`, horariosPorDia);
+            console.log('=========================================');
             
-            if (horasTrabajo.length === 0) {
-                setDisponibilidadDias({});
-                setDisponibilidadCargando(false);
-                return;
-            }
+            const LashistaObj = LashistaesList.find(p => p.id === LashistaId);
+            const fechasLibresPersonales = LashistaObj?.fechas_libres || [];
             
             const primerDia = new Date(year, month, 1);
             const ultimoDia = new Date(year, month + 1, 0);
@@ -654,7 +704,7 @@ function AdminApp() {
             const fechaFin = ultimoDia.toISOString().split('T')[0];
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&profesional_id=eq.${profesionalId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
+                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&Lashista_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -675,7 +725,7 @@ function AdminApp() {
             
             const disponibilidad = {};
             const diasEnMes = ultimoDia.getDate();
-            const nombresDias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']; 
+            const nombresDias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
             
             for (let d = 1; d <= diasEnMes; d++) {
                 const fechaStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
@@ -686,29 +736,64 @@ function AdminApp() {
                 }
                 
                 const fechaActual = new Date(year, month, d);
-                const diaSemana = nombresDias[fechaActual.getDay()]; 
+                const diaSemana = nombresDias[fechaActual.getDay()];
                 
-                let tieneDisponibilidad = false;
+                const horariosDelDia = horariosPorDia[diaSemana] || [];
                 
-                if (diasTrabajo.length === 0 || diasTrabajo.includes(diaSemana)) {
-                    for (const horaIndice of horasTrabajo) {
-                        const slotStr = indiceToHoraLegible(horaIndice);
-                        const [horas, minutos] = slotStr.split(':').map(Number);
-                        const slotStart = horas * 60 + minutos;
-                        const slotEnd = slotStart + 60;
-                        
-                        const reservasDia = reservasPorFecha[fechaStr] || [];
-                        const tieneConflicto = reservasDia.some(reserva => {
-                            const reservaStart = timeToMinutes(reserva.hora_inicio);
-                            const reservaEnd = timeToMinutes(reserva.hora_fin);
-                            return (slotStart < reservaEnd) && (slotEnd > reservaStart);
-                        });
-                        
-                        if (!tieneConflicto) {
-                            tieneDisponibilidad = true;
-                            break;
+                if (horariosDelDia.length === 0) {
+                    disponibilidad[fechaStr] = false;
+                    continue;
+                }
+                
+                let trabajaEsteDia = true;
+                if (diasTrabajo.length > 0 && !diasTrabajo.includes(diaSemana)) {
+                    trabajaEsteDia = false;
+                }
+                
+                if (!trabajaEsteDia) {
+                    disponibilidad[fechaStr] = false;
+                    continue;
+                }
+                
+                let horariosOcupados = 0;
+                const reservasDia = reservasPorFecha[fechaStr] || [];
+                
+                const hoy = getCurrentLocalDate();
+                if (fechaStr === hoy) {
+                    console.log(`\n📅 Analizando HOY (${fechaStr}) - ${diaSemana}:`);
+                    console.log(`   Horarios del día:`, horariosDelDia.map(i => indiceToHoraLegible(i)));
+                    console.log(`   Reservas del día: ${reservasDia.length}`);
+                }
+                
+                for (const horaIndice of horariosDelDia) {
+                    const slotStr = indiceToHoraLegible(horaIndice);
+                    const [horas, minutos] = slotStr.split(':').map(Number);
+                    const slotStart = horas * 60 + minutos;
+                    const slotEnd = slotStart + 60;
+                    
+                    const tieneConflicto = reservasDia.some(reserva => {
+                        const reservaStart = timeToMinutes(reserva.hora_inicio);
+                        const reservaEnd = timeToMinutes(reserva.hora_fin);
+                        return (slotStart < reservaEnd) && (slotEnd > reservaStart);
+                    });
+                    
+                    if (tieneConflicto) {
+                        horariosOcupados++;
+                        if (fechaStr === hoy) {
+                            console.log(`   ❌ Horario ${slotStr} está OCUPADO`);
+                        }
+                    } else {
+                        if (fechaStr === hoy) {
+                            console.log(`   ✅ Horario ${slotStr} está LIBRE`);
                         }
                     }
+                }
+                
+                const tieneDisponibilidad = horariosOcupados < horariosDelDia.length;
+                
+                if (fechaStr === hoy) {
+                    console.log(`   📊 Total horarios del día: ${horariosDelDia.length}, Ocupados: ${horariosOcupados}`);
+                    console.log(`   🟢 Disponible: ${tieneDisponibilidad}\n`);
                 }
                 
                 disponibilidad[fechaStr] = tieneDisponibilidad;
@@ -722,23 +807,10 @@ function AdminApp() {
         }
     };
 
-    const cambiarMesDisponibilidad = (direccion) => {
-        const nuevaFecha = new Date(disponibilidadFecha);
-        nuevaFecha.setMonth(disponibilidadFecha.getMonth() + direccion);
-        setDisponibilidadFecha(nuevaFecha);
-        cargarDisponibilidadDelMes(nuevaFecha, profesionalSeleccionadoDispo);
-    };
-
-    const cambiarMes = (direccion) => {
-        const nuevaFecha = new Date(currentDate);
-        nuevaFecha.setMonth(currentDate.getMonth() + direccion);
-        setCurrentDate(nuevaFecha);
-        
-        if (nuevaReservaData.profesional_id) {
-            cargarDisponibilidadMes(nuevaFecha, nuevaReservaData.profesional_id);
-        }
-    };
-
+    // ============================================
+    // FUNCIONES DEL CALENDARIO
+    // ============================================
+    
     const getDaysInMonth = (date) => {
         const year = date.getFullYear();
         const month = date.getMonth();
@@ -758,16 +830,16 @@ function AdminApp() {
         
         return days;
     };
-
+    
     const formatDate = (date) => {
         const y = date.getFullYear();
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
         const d = date.getDate().toString().padStart(2, '0');
         return `${y}-${m}-${d}`;
     };
-
+    
     const isDateAvailable = (date) => {
-        if (!date || !nuevaReservaData.profesional_id) return false;
+        if (!date || !nuevaReservaData.Lashista_id) return false;
         
         const fechaStr = formatDate(date);
         
@@ -780,24 +852,45 @@ function AdminApp() {
             return false;
         }
         
-        const profesional = profesionalesList.find(p => p.id === parseInt(nuevaReservaData.profesional_id));
-        if (profesional && profesional.fechas_libres && profesional.fechas_libres.includes(fechaStr)) {
+        const Lashista = LashistaesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
+        if (Lashista && Lashista.fechas_libres && Lashista.fechas_libres.includes(fechaStr)) {
             return false;
         }
         
-        const diaSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
+        // 🔥 CORREGIDO: Usar fecha local para el día de semana
+        const fechaLocal = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        const diaSemana = diasSemana[fechaLocal.getDay()];
+        
         if (diasLaborales.length > 0 && !diasLaborales.includes(diaSemana)) {
             return false;
         }
         
         return fechasConHorarios[fechaStr] || false;
     };
-
+    
     const handleDateSelect = (date) => {
         if (isDateAvailable(date)) {
             const fechaStr = formatDate(date);
             setNuevaReservaData({...nuevaReservaData, fecha: fechaStr, hora_inicio: ''});
         }
+    };
+    
+    const cambiarMes = (direccion) => {
+        const nuevaFecha = new Date(currentDate);
+        nuevaFecha.setMonth(currentDate.getMonth() + direccion);
+        setCurrentDate(nuevaFecha);
+        
+        if (nuevaReservaData.Lashista_id) {
+            cargarDisponibilidadMes(nuevaFecha, nuevaReservaData.Lashista_id);
+        }
+    };
+    
+    const cambiarMesDisponibilidad = (direccion) => {
+        const nuevaFecha = new Date(disponibilidadFecha);
+        nuevaFecha.setMonth(disponibilidadFecha.getMonth() + direccion);
+        setDisponibilidadFecha(nuevaFecha);
+        cargarDisponibilidadDelMes(nuevaFecha, LashistaSeleccionadoDispo);
     };
 
     // ============================================
@@ -805,7 +898,7 @@ function AdminApp() {
     // ============================================
     const handleCrearReservaManual = async () => {
         if (!nuevaReservaData.cliente_nombre || !nuevaReservaData.cliente_whatsapp || 
-            !nuevaReservaData.servicio || !nuevaReservaData.profesional_id || 
+            !nuevaReservaData.servicio || !nuevaReservaData.Lashista_id || 
             !nuevaReservaData.fecha || !nuevaReservaData.hora_inicio) {
             alert('Completá todos los campos');
             return;
@@ -818,9 +911,9 @@ function AdminApp() {
                 return;
             }
             
-            const profesional = profesionalesList.find(p => p.id === parseInt(nuevaReservaData.profesional_id));
-            if (!profesional) {
-                alert('Profesional no encontrado');
+            const Lashista = LashistaesList.find(p => p.id === parseInt(nuevaReservaData.Lashista_id));
+            if (!Lashista) {
+                alert('Lashista no encontrado');
                 return;
             }
             
@@ -833,8 +926,8 @@ function AdminApp() {
                 cliente_whatsapp: `53${nuevaReservaData.cliente_whatsapp.replace(/\D/g, '')}`,
                 servicio: nuevaReservaData.servicio,
                 duracion: servicio.duracion,
-                profesional_id: nuevaReservaData.profesional_id,
-                profesional_nombre: profesional.nombre,
+                Lashista_id: nuevaReservaData.Lashista_id,
+                Lashista_nombre: Lashista.nombre,
                 fecha: nuevaReservaData.fecha,
                 hora_inicio: nuevaReservaData.hora_inicio,
                 hora_fin: endTime,
@@ -868,7 +961,7 @@ function AdminApp() {
                     cliente_nombre: '',
                     cliente_whatsapp: '',
                     servicio: '',
-                    profesional_id: userRole === 'profesional' ? profesional?.id : '',
+                    Lashista_id: userRole === 'Lashista' ? Lashista?.id : '',
                     fecha: '',
                     hora_inicio: '',
                     requiereAnticipo: false
@@ -943,9 +1036,9 @@ function AdminApp() {
         try {
             let data;
             
-            if (userRole === 'profesional' && profesional) {
-                console.log(`📋 Cargando reservas de profesional ${profesional.id}...`);
-                data = await window.getReservasPorProfesional?.(profesional.id, false) || [];
+            if (userRole === 'Lashista' && Lashista) {
+                console.log(`📋 Cargando reservas de Lashista ${Lashista.id}...`);
+                data = await window.getReservasPorLashista?.(Lashista.id, false) || [];
             } else {
                 console.log('📋 Llamando a getAllBookings...');
                 data = await getAllBookings();
@@ -958,8 +1051,8 @@ function AdminApp() {
                 
                 await marcarTurnosCompletados();
                 
-                if (userRole === 'profesional' && profesional) {
-                    data = await window.getReservasPorProfesional?.(profesional.id, false) || [];
+                if (userRole === 'Lashista' && Lashista) {
+                    data = await window.getReservasPorLashista?.(Lashista.id, false) || [];
                 } else {
                     data = await getAllBookings();
                 }
@@ -998,16 +1091,16 @@ function AdminApp() {
     React.useEffect(() => {
         fetchBookings();
         
-        if (userRole === 'admin' || (userRole === 'profesional' && userNivel >= 2)) {
+        if (userRole === 'admin' || (userRole === 'Lashista' && userNivel >= 2)) {
             loadClientesRegistrados();
         }
         
         console.log('🔍 Verificando auth:', {
             userRole,
             userNivel,
-            profesional
+            Lashista
         });
-    }, [userRole, userNivel, profesional]);
+    }, [userRole, userNivel, Lashista]);
 
     // ============================================
     // FUNCIÓN PARA CONFIRMAR PAGO
@@ -1052,14 +1145,14 @@ function AdminApp() {
                 'Mi Negocio';
             
             const mensajeCliente = 
-`💅 *${nombreNegocio} - Turno Confirmado* 🎉
+`💫 *${nombreNegocio} - Turno Confirmado* 🎉
 
 Hola *${bookingData.cliente_nombre}*, ¡tu turno ha sido CONFIRMADO!
 
 📅 *Fecha:* ${fechaConDia}
 ⏰ *Hora:* ${horaFormateada}
-💅 *Servicio:* ${bookingData.servicio}
-👩‍🎨 *Profesional:* ${bookingData.profesional_nombre || bookingData.trabajador_nombre}
+💫 *Servicio:* ${bookingData.servicio}
+👁️ *Lashista:* ${bookingData.Lashista_nombre || bookingData.trabajador_nombre}
 
 ✅ *Pago recibido correctamente*
 
@@ -1142,7 +1235,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
             localStorage.removeItem('adminAuth');
             localStorage.removeItem('adminUser');
             localStorage.removeItem('adminLoginTime');
-            localStorage.removeItem('profesionalAuth');
+            localStorage.removeItem('LashistaAuth');
             localStorage.removeItem('userRole');
             localStorage.removeItem('clienteAuth');
             localStorage.removeItem('negocioId');
@@ -1190,16 +1283,16 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
 
     const getTabsDisponibles = () => {
         const tabs = [];
-        tabs.push({ id: 'reservas', icono: '📅', label: userRole === 'profesional' ? 'Mis Reservas' : 'Reservas' });
+        tabs.push({ id: 'reservas', icono: '📅', label: userRole === 'Lashista' ? 'Mis Reservas' : 'Reservas' });
         
-        if (userRole === 'admin' || (userRole === 'profesional' && userNivel >= 2)) {
+        if (userRole === 'admin' || (userRole === 'Lashista' && userNivel >= 2)) {
             tabs.push({ id: 'configuracion', icono: '⚙️', label: 'Configuración' });
             tabs.push({ id: 'clientes', icono: '👤', label: 'Clientes' });
         }
         
-        if (userRole === 'admin' || (userRole === 'profesional' && userNivel >= 3)) {
+        if (userRole === 'admin' || (userRole === 'Lashista' && userNivel >= 3)) {
             tabs.push({ id: 'servicios', icono: '💈', label: 'Servicios' });
-            tabs.push({ id: 'profesionales', icono: '👥', label: 'Profesionales' });
+            tabs.push({ id: 'Lashistaes', icono: '👥', label: 'Lashistaes' });
         }
         
         return tabs;
@@ -1210,7 +1303,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
             cliente_nombre: '',
             cliente_whatsapp: '',
             servicio: '',
-            profesional_id: userRole === 'profesional' ? profesional?.id : '',
+            Lashista_id: userRole === 'Lashista' ? Lashista?.id : '',
             fecha: '',
             hora_inicio: '',
             requiereAnticipo: false
@@ -1224,7 +1317,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
     const abrirModalDisponibilidad = () => {
         setDisponibilidadFecha(new Date());
         setShowDisponibilidadModal(true);
-        cargarDisponibilidadDelMes(new Date(), profesionalSeleccionadoDispo);
+        cargarDisponibilidadDelMes(new Date(), LashistaSeleccionadoDispo);
     };
 
     const tabsDisponibles = getTabsDisponibles();
@@ -1233,39 +1326,38 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
     const disponibilidadDays = getDaysInMonth(disponibilidadFecha);
 
     return (
-        <div className="min-h-screen bg-pink-50 p-3 sm:p-6">
+        <div className="min-h-screen bg-purple-100 p-3 sm:p-6">
             <div className="max-w-6xl mx-auto space-y-4">
                 
                 {/* HEADER CON LOGO */}
-                <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-l-4 border-pink-500">
+                <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-l-4 border-purple-600">
                     <div className="flex items-center gap-3">
                         {logoNegocio ? (
                             <img 
                                 src={logoNegocio} 
                                 alt={nombreNegocio} 
-                                className="w-12 h-12 object-contain rounded-xl shadow-lg ring-2 ring-pink-300 bg-white p-1"
+                                className="w-12 h-12 object-contain rounded-xl shadow-lg ring-2 ring-purple-400 bg-white p-1"
                                 onError={(e) => {
                                     e.target.onerror = null;
                                     e.target.style.display = 'none';
                                     const parent = e.target.parentElement;
                                     if (parent) {
-                                        parent.innerHTML = '<div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow-lg flex items-center justify-center"><span class="text-2xl text-white">💖</span></div>';
+                                        parent.innerHTML = '<div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl shadow-lg flex items-center justify-center"><span class="text-2xl text-white">💖</span></div>';
                                     }
                                 }}
                             />
                         ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow-lg flex items-center justify-center">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl shadow-lg flex items-center justify-center">
                                 <span className="text-2xl text-white">💖</span>
                             </div>
                         )}
                         <div>
                             <h1 className="text-xl font-bold text-pink-800">{nombreNegocio}</h1>
-                            <p className="text-xs text-pink-500">Panel de Administración</p>
+                            <p className="text-xs text-purple-600">Panel de Administración</p>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        {/* 🔥 BOTÓN NUEVA RESERVA */}
                         <button
                             onClick={abrirModalNuevaReserva}
                             className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 shadow-md border border-green-400 flex-1 sm:flex-none justify-center"
@@ -1274,7 +1366,6 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                             <span className="font-medium">Nueva Reserva</span>
                         </button>
 
-                        {/* 🔥 BOTÓN CALENDARIO DE DISPONIBILIDAD */}
                         <button
                             onClick={abrirModalDisponibilidad}
                             className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 shadow-md border border-blue-400 flex-1 sm:flex-none justify-center"
@@ -1286,7 +1377,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
 
                         <button
                             onClick={() => window.location.href = 'editar-negocio.html'}
-                            className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 shadow-md border border-pink-400 flex-1 sm:flex-none justify-center"
+                            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 shadow-md border border-purple-500 flex-1 sm:flex-none justify-center"
                         >
                             <span className="text-lg">💖</span>
                             <span className="font-medium">Editar Negocio</span>
@@ -1297,26 +1388,26 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                 cargarConfiguracion();
                                 setConfigVersion(prev => prev + 1);
                             }} 
-                            className="p-2 bg-pink-50 rounded-full hover:bg-pink-100 transition-all hover:scale-105 border border-pink-200"
+                            className="p-2 bg-purple-100 rounded-full hover:bg-purple-200 transition-all hover:scale-105 border border-purple-300"
                             title="Recargar datos del negocio"
                         >
-                            <i className="icon-refresh-cw text-pink-600"></i>
+                            <i className="icon-refresh-cw text-purple-700"></i>
                         </button>
 
                         <button 
                             onClick={fetchBookings} 
-                            className="p-2 bg-pink-50 rounded-full hover:bg-pink-100 transition-all hover:scale-105 border border-pink-200"
+                            className="p-2 bg-purple-100 rounded-full hover:bg-purple-200 transition-all hover:scale-105 border border-purple-300"
                             title="Actualizar reservas"
                         >
-                            <i className="icon-refresh-cw text-pink-600"></i>
+                            <i className="icon-refresh-cw text-purple-700"></i>
                         </button>
 
                         <button 
                             onClick={handleLogout}
-                            className="p-2 bg-pink-50 rounded-full hover:bg-pink-100 transition-all hover:scale-105 border border-pink-200"
+                            className="p-2 bg-purple-100 rounded-full hover:bg-purple-200 transition-all hover:scale-105 border border-purple-300"
                             title="Cerrar sesión"
                         >
-                            <i className="icon-log-out text-pink-600"></i>
+                            <i className="icon-log-out text-purple-700"></i>
                         </button>
                     </div>
                 </div>
@@ -1332,7 +1423,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente *</label>
-                                    <input type="text" value={nuevaReservaData.cliente_nombre} onChange={(e) => setNuevaReservaData({...nuevaReservaData, cliente_nombre: e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="Ej: Juan Pérez" />
+                                    <input type="text" value={nuevaReservaData.cliente_nombre} onChange={(e) => setNuevaReservaData({...nuevaReservaData, cliente_nombre: e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="Ej: María Pérez" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp del Cliente *</label>
@@ -1349,10 +1440,10 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Profesional *</label>
-                                    <select value={nuevaReservaData.profesional_id} onChange={(e) => setNuevaReservaData({...nuevaReservaData, profesional_id: e.target.value})} className="w-full border rounded-lg px-3 py-2">
-                                        <option value="">Seleccionar profesional</option>
-                                        {profesionalesList.map(p => (<option key={p.id} value={p.id}>{p.nombre} - {p.especialidad}</option>))}
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Lashista *</label>
+                                    <select value={nuevaReservaData.Lashista_id} onChange={(e) => setNuevaReservaData({...nuevaReservaData, Lashista_id: e.target.value})} className="w-full border rounded-lg px-3 py-2">
+                                        <option value="">Seleccionar Lashista</option>
+                                        {LashistaesList.map(p => (<option key={p.id} value={p.id}>{p.nombre} - {p.especialidad}</option>))}
                                     </select>
                                 </div>
                                 {userRole === 'admin' && (
@@ -1361,7 +1452,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                         <label htmlFor="requiereAnticipo" className="text-sm font-medium text-yellow-800">💰 Requerir anticipo al cliente</label>
                                     </div>
                                 )}
-                                {nuevaReservaData.profesional_id && (
+                                {nuevaReservaData.Lashista_id && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
                                         <div className="bg-white rounded-xl border">
@@ -1384,9 +1475,9 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                                         const esPasado = fechaStr < getCurrentLocalDate();
                                                         
                                                         let className = "h-10 w-full rounded-lg text-sm font-medium";
-                                                        if (selected) className += " bg-pink-500 text-white shadow-md";
+                                                        if (selected) className += " bg-purple-600 text-white shadow-md";
                                                         else if (!available || esPasado || esCerrado) className += " text-gray-300 cursor-not-allowed bg-gray-50 line-through";
-                                                        else className += " text-gray-700 hover:bg-pink-50 cursor-pointer";
+                                                        else className += " text-gray-700 hover:bg-purple-100 cursor-pointer";
                                                         
                                                         return (
                                                             <button key={idx} onClick={() => handleDateSelect(date)} disabled={!available || esPasado || esCerrado} className={className} title={esCerrado ? "Día cerrado" : esPasado ? "Fecha pasada" : ""}>
@@ -1405,7 +1496,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                         {horariosDisponibles.length > 0 ? (
                                             <div className="grid grid-cols-3 gap-2">
                                                 {horariosDisponibles.map(hora => (
-                                                    <button key={hora} type="button" onClick={() => setNuevaReservaData({...nuevaReservaData, hora_inicio: hora})} className={`py-2 px-3 rounded-lg text-sm font-medium ${nuevaReservaData.hora_inicio === hora ? 'bg-pink-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                                                    <button key={hora} type="button" onClick={() => setNuevaReservaData({...nuevaReservaData, hora_inicio: hora})} className={`py-2 px-3 rounded-lg text-sm font-medium ${nuevaReservaData.hora_inicio === hora ? 'bg-purple-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
                                                         {formatTo12Hour(hora)}
                                                     </button>
                                                 ))}
@@ -1431,20 +1522,20 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                 <button onClick={() => setShowDisponibilidadModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                             </div>
                             
-                            {userRole === 'admin' && profesionalesList.length > 0 && (
+                            {userRole === 'admin' && LashistaesList.length > 0 && (
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Profesional:</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Lashista:</label>
                                     <select
-                                        value={profesionalSeleccionadoDispo || ''}
+                                        value={LashistaSeleccionadoDispo || ''}
                                         onChange={(e) => {
                                             const id = e.target.value ? parseInt(e.target.value) : null;
-                                            setProfesionalSeleccionadoDispo(id);
+                                            setLashistaSeleccionadoDispo(id);
                                             cargarDisponibilidadDelMes(disponibilidadFecha, id);
                                         }}
                                         className="w-full border rounded-lg px-3 py-2"
                                     >
-                                        <option value="">Seleccionar profesional</option>
-                                        {profesionalesList.map(p => (
+                                        <option value="">Seleccionar Lashista</option>
+                                        {LashistaesList.map(p => (
                                             <option key={p.id} value={p.id}>{p.nombre}</option>
                                         ))}
                                     </select>
@@ -1458,7 +1549,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                             </div>
                             
                             {disponibilidadCargando ? (
-                                <div className="text-center py-12"><div className="animate-spin h-8 w-8 border-b-2 border-pink-500 mx-auto"></div><p className="mt-2">Cargando disponibilidad...</p></div>
+                                <div className="text-center py-12"><div className="animate-spin h-8 w-8 border-b-2 border-purple-600 mx-auto"></div><p className="mt-2">Cargando disponibilidad...</p></div>
                             ) : (
                                 <div>
                                     <div className="grid grid-cols-7 mb-2 text-center">
@@ -1505,7 +1596,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                 {/* PESTAÑAS */}
                 <div className="bg-white p-2 rounded-xl shadow-sm flex flex-wrap gap-2">
                     {tabsDisponibles.map(tab => (
-                        <button key={tab.id} onClick={() => setTabActivo(tab.id)} className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${tabActivo === tab.id ? 'bg-pink-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                        <button key={tab.id} onClick={() => setTabActivo(tab.id)} className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${tabActivo === tab.id ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                             <span>{tab.icono}</span>
                             <span>{tab.label}</span>
                         </button>
@@ -1514,22 +1605,22 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
 
                 {/* CONTENIDO */}
                 {tabActivo === 'configuracion' && (
-                    <ConfigPanel profesionalId={userRole === 'profesional' ? profesional?.id : null} modoRestringido={userRole === 'profesional' && userNivel === 2} />
+                    <ConfigPanel LashistaId={userRole === 'Lashista' ? Lashista?.id : null} modoRestringido={userRole === 'Lashista' && userNivel === 2} />
                 )}
 
                 {tabActivo === 'servicios' && (userRole === 'admin' || userNivel >= 3) && (
                     <ServiciosPanel />
                 )}
 
-                {tabActivo === 'profesionales' && (userRole === 'admin' || userNivel >= 3) && (
-                    <ProfesionalesPanel />
+                {tabActivo === 'Lashistaes' && (userRole === 'admin' || userNivel >= 3) && (
+                    <LashistaesPanel />
                 )}
 
                 {tabActivo === 'clientes' && (userRole === 'admin' || userNivel >= 2) && (
                     <div className="bg-white rounded-xl shadow-sm p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">👥 Clientes Registrados ({clientesRegistrados.length})</h2>
-                            <button onClick={() => { setShowClientesRegistrados(!showClientesRegistrados); if (!showClientesRegistrados) loadClientesRegistrados(); }} className="text-pink-600 text-sm">
+                            <button onClick={() => { setShowClientesRegistrados(!showClientesRegistrados); if (!showClientesRegistrados) loadClientesRegistrados(); }} className="text-purple-700 text-sm">
                                 {showClientesRegistrados ? '▲ Ocultar' : '▼ Mostrar'}
                             </button>
                         </div>
@@ -1550,24 +1641,24 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                 {/* RESERVAS */}
                 {tabActivo === 'reservas' && (
                     <>
-                        {userRole === 'profesional' && profesional && (
-                            <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-                                <p className="text-pink-800 font-medium">Hola {profesional.nombre} 👋 - Mostrando tus reservas ({filteredBookings.length})</p>
+                        {userRole === 'Lashista' && Lashista && (
+                            <div className="bg-purple-100 border border-purple-300 rounded-lg p-4">
+                                <p className="text-pink-800 font-medium">Hola {Lashista.nombre} 👋 - Mostrando tus reservas ({filteredBookings.length})</p>
                             </div>
                         )}
 
                         <div className="bg-white p-4 rounded-xl shadow-sm space-y-3">
                             <div className="flex flex-wrap gap-3 items-center">
                                 <input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="border rounded-lg px-3 py-2 text-sm" />
-                                {filterDate && <button onClick={() => setFilterDate('')} className="text-pink-500 text-sm">Limpiar filtro</button>}
+                                {filterDate && <button onClick={() => setFilterDate('')} className="text-purple-600 text-sm">Limpiar filtro</button>}
                             </div>
 
                             <div className="flex flex-wrap gap-2 items-center">
-                                <button onClick={() => setStatusFilter('activas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'activas' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700'}`}>Activas ({activasCount})</button>
+                                <button onClick={() => setStatusFilter('activas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'activas' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Activas ({activasCount})</button>
                                 <button onClick={() => setStatusFilter('pendientes')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'pendientes' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700'}`}>Pendientes ({pendientesCount})</button>
-                                <button onClick={() => setStatusFilter('completadas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'completadas' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700'}`}>Completadas ({completadasCount})</button>
-                                <button onClick={() => setStatusFilter('canceladas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'canceladas' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700'}`}>Canceladas ({canceladasCount})</button>
-                                <button onClick={() => setStatusFilter('todas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'todas' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700'}`}>Todas ({bookings.length})</button>
+                                <button onClick={() => setStatusFilter('completadas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'completadas' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Completadas ({completadasCount})</button>
+                                <button onClick={() => setStatusFilter('canceladas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'canceladas' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Canceladas ({canceladasCount})</button>
+                                <button onClick={() => setStatusFilter('todas')} className={`px-4 py-2 rounded-lg text-sm font-medium ${statusFilter === 'todas' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Todas ({bookings.length})</button>
                                 {statusFilter === 'canceladas' && (
                                     <button onClick={borrarCanceladas} className="px-4 py-2 bg-red-700 text-white rounded-lg text-sm">🗑️ Borrar todas</button>
                                 )}
@@ -1575,7 +1666,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                         </div>
 
                         {loading ? (
-                            <div className="text-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div><p className="text-pink-500 mt-4">Cargando reservas...</p></div>
+                            <div className="text-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div><p className="text-purple-600 mt-4">Cargando reservas...</p></div>
                         ) : (
                             <div className="space-y-3">
                                 {filteredBookings.length === 0 ? (
@@ -1583,23 +1674,23 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                 ) : (
                                     filteredBookings.map(b => (
                                         <div key={b.id} className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${
-                                            b.estado === 'Reservado' ? 'border-l-pink-500' :
+                                            b.estado === 'Reservado' ? 'border-l-purple-600' :
                                             b.estado === 'Pendiente' ? 'border-l-yellow-500' :
                                             b.estado === 'Completado' ? 'border-l-green-500' :
                                             'border-l-red-500'
                                         }`}>
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">{window.formatFechaCompleta ? window.formatFechaCompleta(b.fecha) : b.fecha}</span>
-                                                <span className="text-sm bg-pink-100 text-pink-700 px-2 py-1 rounded-full">{formatTo12Hour(b.hora_inicio)}</span>
+                                                <span className="text-sm bg-purple-200 text-pink-700 px-2 py-1 rounded-full">{formatTo12Hour(b.hora_inicio)}</span>
                                             </div>
                                             <div className="text-sm space-y-1">
                                                 <p><span className="font-medium">👤 Cliente:</span> {b.cliente_nombre}</p>
                                                 <p><span className="font-medium">📱 WhatsApp:</span> {b.cliente_whatsapp}</p>
-                                                <p><span className="font-medium">💈 Servicio:</span> {b.servicio}</p>
-                                                <p><span className="font-medium">👩‍🎨 Profesional:</span> {b.profesional_nombre || b.trabajador_nombre}</p>
+                                                <p><span className="font-medium">💫 Servicio:</span> {b.servicio}</p>
+                                                <p><span className="font-medium">👁️ Lashista:</span> {b.Lashista_nombre || b.trabajador_nombre}</p>
                                             </div>
                                             <div className="flex justify-between items-center mt-3 pt-2 border-t">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${b.estado === 'Reservado' ? 'bg-pink-100 text-pink-700' : b.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' : b.estado === 'Completado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${b.estado === 'Reservado' ? 'bg-purple-200 text-pink-700' : b.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' : b.estado === 'Completado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                     {b.estado}
                                                 </span>
                                                 <div className="flex gap-2">

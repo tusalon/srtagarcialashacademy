@@ -1,4 +1,4 @@
-// components/TimeSlots.js - Versión con filtro por trabajador
+﻿// components/TimeSlots.js - Versión con filtro por trabajador
 
 function TimeSlots({ service, date, worker, onTimeSelect, selectedTime }) {
     const [slots, setSlots] = React.useState([]);
@@ -44,7 +44,7 @@ function TimeSlots({ service, date, worker, onTimeSelect, selectedTime }) {
     return (
         <div className="space-y-4 animate-fade-in">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <div className="icon-clock text-pink-500"></div>
+                <div className="icon-clock text-purple-600"></div>
                 4. Elegí un horario con {worker.nombre}
                 {selectedTime && (
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full ml-2">
@@ -55,7 +55,7 @@ function TimeSlots({ service, date, worker, onTimeSelect, selectedTime }) {
 
             {loading ? (
                 <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
                 </div>
             ) : error ? (
                 <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>
@@ -79,8 +79,8 @@ function TimeSlots({ service, date, worker, onTimeSelect, selectedTime }) {
                     </div>
                     
                     {date === getCurrentLocalDate() && (
-                        <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg flex items-center gap-2 border border-amber-200">
-                            <div className="icon-clock text-amber-500"></div>
+                        <div className="text-sm text-purple-700 bg-amber-50 p-3 rounded-lg flex items-center gap-2 border border-amber-200">
+                            <div className="icon-clock text-purple-600"></div>
                             <span>Solo se muestran horarios que aún no pasaron</span>
                         </div>
                     )}
@@ -97,8 +97,8 @@ function TimeSlots({ service, date, worker, onTimeSelect, selectedTime }) {
                                     className={`
                                         py-3 px-2 rounded-lg text-base font-semibold transition-all transform
                                         ${isSelected
-                                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-pink-300'
-                                            : 'bg-white text-gray-700 border-2 border-pink-200 hover:border-pink-400 hover:bg-pink-50 hover:scale-105 hover:shadow-md'}
+                                            ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-purple-400'
+                                            : 'bg-white text-gray-700 border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-100 hover:scale-105 hover:shadow-md'}
                                     `}
                                 >
                                     {time12h}

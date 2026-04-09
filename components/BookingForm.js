@@ -1,9 +1,9 @@
-// components/BookingForm.js - VERSIÓN GENÉRICA
+﻿// components/BookingForm.js - VERSIÓN GENÉRICA
 // CON LÓGICA COMPLETA DE NOTIFICACIONES (PUSH SIEMPRE)
 // CORREGIDO: Hora local para archivos ICS
 // MODIFICADO: Solo notifica a la dueña, NO al cliente
 
-function BookingForm({ service, profesional, date, time, onSubmit, onCancel, cliente }) {
+function BookingForm({ service, Lashista, date, time, onSubmit, onCancel, cliente }) {
     const [submitting, setSubmitting] = React.useState(false);
     const [error, setError] = React.useState(null);
 
@@ -107,7 +107,7 @@ function BookingForm({ service, profesional, date, time, onSubmit, onCancel, cli
         const linea1 = `Appointment Details`;
         const linea2 = `When: ${fechaInicioStr} - ${fechaFinStr} (CST)`;
         const linea3 = `Service: ${bookingData.servicio}`;
-        const linea4 = `Provider Name: ${bookingData.profesional_nombre}`;
+        const linea4 = `Provider Name: ${bookingData.Lashista_nombre}`;
         const linea5 = `Client: ${bookingData.cliente_nombre}`;
         const linea6 = `WhatsApp: +53 ${bookingData.cliente_whatsapp}`;
         const linea7 = ``;
@@ -145,7 +145,7 @@ SEQUENCE:0
 DTSTAMP:${dtstamp}
 DTSTART;TZID=America/Havana:${dtstart}
 DTEND;TZID=America/Havana:${dtend}
-SUMMARY:${bookingData.servicio} with ${bookingData.profesional_nombre}
+SUMMARY:${bookingData.servicio} with ${bookingData.Lashista_nombre}
 TRANSP:OPAQUE
 LOCATION:${nombreNegocio}
 DESCRIPTION:${descripcion}
@@ -199,7 +199,7 @@ END:VCALENDAR`;
         setError(null);
 
         try {
-            const bookings = await getBookingsByDateAndProfesional(date, profesional.id);
+            const bookings = await getBookingsByDateAndLashista(date, Lashista.id);
             const baseSlots = [time];
             const available = filterAvailableSlots(baseSlots, service.duracion, bookings);
 
@@ -219,8 +219,8 @@ END:VCALENDAR`;
                 cliente_whatsapp: cliente.whatsapp,
                 servicio: service.nombre,
                 duracion: service.duracion,
-                profesional_id: profesional.id,
-                profesional_nombre: profesional.nombre,
+                Lashista_id: Lashista.id,
+                Lashista_nombre: Lashista.nombre,
                 fecha: date,
                 hora_inicio: time,
                 hora_fin: endTime,
@@ -283,23 +283,23 @@ END:VCALENDAR`;
     // ============================================
     return (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white/95 backdrop-blur-md w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl space-y-6 border-2 border-pink-300">
-                <div className="flex justify-between items-center border-b border-pink-200 pb-4">
+            <div className="bg-white/95 backdrop-blur-md w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl space-y-6 border-2 border-purple-400">
+                <div className="flex justify-between items-center border-b border-purple-300 pb-4">
                     <h3 className="text-xl font-bold text-pink-800 flex items-center gap-2">
                         <span>💖</span>
                         Confirmar Reserva
                     </h3>
-                    <button onClick={onCancel} className="text-pink-400 hover:text-pink-600">
+                    <button onClick={onCancel} className="text-purple-500 hover:text-purple-700">
                         <i className="icon-x text-2xl"></i>
                     </button>
                 </div>
 
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-xl border border-pink-200 space-y-2">
+                    <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-4 rounded-xl border border-purple-300 space-y-2">
                         <div className="flex items-center gap-3 text-pink-700">
                             <span className="text-2xl">
                                 {service.nombre.toLowerCase().includes('corte') ? '✂️' : 
-                                 service.nombre.toLowerCase().includes('uña') ? '💅' :
+                                 service.nombre.toLowerCase().includes('uña') ? '💫' :
                                  service.nombre.toLowerCase().includes('peinado') ? '💇‍♀️' :
                                  service.nombre.toLowerCase().includes('maquillaje') ? '💄' : '✨'}
                             </span>
@@ -307,8 +307,8 @@ END:VCALENDAR`;
                         </div>
                         
                         <div className="flex items-center gap-3 text-pink-700">
-                            <span className="text-2xl">👩‍🎨</span>
-                            <span>Con: <strong>{profesional.nombre}</strong></span>
+                            <span className="text-2xl">👁️</span>
+                            <span>Con: <strong>{Lashista.nombre}</strong></span>
                         </div>
                         
                         <div className="flex items-center gap-3 text-pink-700">
@@ -322,15 +322,15 @@ END:VCALENDAR`;
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                        <div className="bg-purple-100 p-3 rounded-lg border border-purple-300">
                             <p className="text-sm text-pink-700">
                                 <span className="font-semibold">Tus datos:</span> {cliente.nombre} - +{cliente.whatsapp}
                             </p>
                         </div>
 
                         {error && (
-                            <div className="text-pink-600 text-sm bg-pink-100 p-3 rounded-lg flex items-start gap-2 border border-pink-300">
-                                <span className="text-pink-500">⚠️</span>
+                            <div className="text-purple-700 text-sm bg-purple-200 p-3 rounded-lg flex items-start gap-2 border border-purple-400">
+                                <span className="text-purple-600">⚠️</span>
                                 {error}
                             </div>
                         )}
@@ -338,7 +338,7 @@ END:VCALENDAR`;
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3.5 rounded-xl font-bold hover:from-pink-600 hover:to-pink-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-lg"
+                            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3.5 rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-lg"
                         >
                             {submitting ? (
                                 <>

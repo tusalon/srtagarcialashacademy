@@ -1,4 +1,4 @@
-// components/admin/SetupWizard.js
+﻿// components/admin/SetupWizard.js
 
 function SetupWizard() {
     const [step, setStep] = React.useState(1);
@@ -226,7 +226,7 @@ function SetupWizard() {
     if (cargando) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
             </div>
         );
     }
@@ -259,7 +259,7 @@ function SetupWizard() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center">
+                        <div className="w-16 h-16 bg-purple-700 rounded-2xl flex items-center justify-center">
                             <i className="icon-settings text-3xl text-white"></i>
                         </div>
                     </div>
@@ -277,7 +277,7 @@ function SetupWizard() {
                         <div key={s} className="flex-1 text-center">
                             <div className={`
                                 w-10 h-10 rounded-full mx-auto flex items-center justify-center font-bold transition-all
-                                ${s === step ? 'bg-amber-600 text-white shadow-md scale-110' : 
+                                ${s === step ? 'bg-purple-700 text-white shadow-md scale-110' : 
                                   s < step ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}
                             `}>
                                 {s < step ? '✓' : s}
@@ -306,7 +306,7 @@ function SetupWizard() {
                 {step === 1 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-building text-amber-500"></i>
+                            <i className="icon-building text-purple-600"></i>
                             Datos del negocio
                         </h2>
                         
@@ -318,7 +318,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.nombre}
                                 onChange={(e) => setConfig({...config, nombre: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 placeholder="Ej: BennetSalón"
                                 autoFocus
                             />
@@ -336,7 +336,7 @@ function SetupWizard() {
                                     type="tel"
                                     value={config.telefono_whatsapp}
                                     onChange={(e) => setConfig({...config, telefono_whatsapp: e.target.value.replace(/\D/g, '')})}
-                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                     placeholder="54438629"
                                     maxLength="8"
                                 />
@@ -352,7 +352,7 @@ function SetupWizard() {
                                 type="email"
                                 value={config.email}
                                 onChange={(e) => setConfig({...config, email: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 placeholder="gisellebenettlc@gmail.com"
                             />
                         </div>
@@ -365,7 +365,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.direccion}
                                 onChange={(e) => setConfig({...config, direccion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 placeholder="Calle Principal 123"
                             />
                         </div>
@@ -383,7 +383,7 @@ function SetupWizard() {
                 {step === 2 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-palette text-amber-500"></i>
+                            <i className="icon-palette text-purple-600"></i>
                             Personalización
                         </h2>
                         
@@ -437,7 +437,7 @@ function SetupWizard() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Logo del negocio
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-amber-500 transition cursor-pointer"
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-600 transition cursor-pointer"
                                  onClick={() => document.getElementById('logo-input').click()}>
                                 <input
                                     id="logo-input"
@@ -469,7 +469,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.horario_atencion}
                                 onChange={(e) => setConfig({...config, horario_atencion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 placeholder="Lun-Vie 9:00-20:00, Sáb 9:00-18:00"
                             />
                         </div>
@@ -480,7 +480,7 @@ function SetupWizard() {
                 {step === 3 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-message-square text-amber-500"></i>
+                            <i className="icon-message-square text-purple-600"></i>
                             Mensajes
                         </h2>
                         
@@ -491,7 +491,7 @@ function SetupWizard() {
                             <textarea
                                 value={config.mensaje_bienvenida}
                                 onChange={(e) => setConfig({...config, mensaje_bienvenida: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 rows="3"
                                 placeholder="¡Bienvenido a nuestro salón!"
                             />
@@ -505,7 +505,7 @@ function SetupWizard() {
                             <textarea
                                 value={config.mensaje_confirmacion}
                                 onChange={(e) => setConfig({...config, mensaje_confirmacion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 rows="3"
                                 placeholder="Tu turno ha sido reservado con éxito"
                             />
@@ -523,7 +523,7 @@ function SetupWizard() {
                                     type="text"
                                     value={config.instagram}
                                     onChange={(e) => setConfig({...config, instagram: e.target.value})}
-                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                     placeholder="bennetsalon"
                                 />
                             </div>
@@ -537,7 +537,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.facebook}
                                 onChange={(e) => setConfig({...config, facebook: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                                 placeholder="/bennetsalon"
                             />
                         </div>
@@ -624,7 +624,7 @@ function SetupWizard() {
                     {step < 4 ? (
                         <button
                             onClick={handleNext}
-                            className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition flex items-center gap-2"
+                            className="px-6 py-2 bg-purple-700 text-white rounded-lg hover:bg-amber-700 transition flex items-center gap-2"
                             disabled={guardando}
                         >
                             Continuar

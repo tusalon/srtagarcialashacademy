@@ -1,4 +1,4 @@
-// components/Calendar.js - Versión con worker
+﻿// components/Calendar.js - Versión con worker
 
 function Calendar({ onDateSelect, selectedDate, worker }) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
@@ -89,10 +89,10 @@ function Calendar({ onDateSelect, selectedDate, worker }) {
     return (
         <div className="space-y-4 animate-fade-in">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <div className="icon-calendar text-pink-500"></div>
+                <div className="icon-calendar text-purple-600"></div>
                 3. Seleccioná una fecha
                 {worker && (
-                    <span className="text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full ml-2">
+                    <span className="text-sm bg-purple-200 text-pink-700 px-3 py-1 rounded-full ml-2">
                         con {worker.nombre}
                     </span>
                 )}
@@ -152,11 +152,11 @@ function Calendar({ onDateSelect, selectedDate, worker }) {
                             let className = "h-10 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-all relative";
                             
                             if (selected) {
-                                className += " bg-pink-600 text-white shadow-md scale-105 ring-2 ring-pink-300";
+                                className += " bg-purple-700 text-white shadow-md scale-105 ring-2 ring-purple-400";
                             } else if (!available) {
                                 className += " text-gray-300 cursor-not-allowed bg-gray-50";
                             } else {
-                                className += " text-gray-700 hover:bg-pink-50 hover:text-pink-600 hover:scale-105 cursor-pointer";
+                                className += " text-gray-700 hover:bg-purple-100 hover:text-purple-700 hover:scale-105 cursor-pointer";
                             }
                             
                             let title = "";

@@ -1,6 +1,6 @@
-﻿// utils/auth-Lashistaes.js - Autenticación para Lashistaes (CORREGIDO)
+﻿// utils/auth-profesionales.js - Autenticación para Lashistaes (CORREGIDO)
 
-console.log('👤 auth-Lashistaes.js cargado');
+console.log('👤 auth-profesionales.js cargado');
 
 // Helper para obtener negocio_id - SIN RECURSIÓN
 function getNegocioId() {

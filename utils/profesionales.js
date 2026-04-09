@@ -1,6 +1,6 @@
-﻿// utils/Lashistaes.js - Gestión de Lashistaes (CORREGIDO)
+﻿// utils/profesionales.js - Gestión de profesionales (CORREGIDO)
 
-console.log('👥 Lashistaes.js cargado');
+console.log('👥 profesionales.js cargado');
 
 // Helper para obtener negocio_id - SIN RECURSIÓN
 function getNegocioId() {
@@ -12,17 +12,17 @@ function getNegocioId() {
     return localStorage.getItem('negocioId');
 }
 
-let LashistaesCache = [];
-let ultimaActualizacionLashistaes = 0;
-const CACHE_DURATION_LashistaES = 5 * 60 * 1000;
+let profesionalesCache = [];
+let ultimaActualizacionprofesionales = 0;
+const CACHE_DURATION_profesionales = 5 * 60 * 1000;
 
-async function cargarLashistaesDesdeDB() {
+async function cargarprofesionalesDesdeDB() {
     try {
         const negocioId = getNegocioId();
-        console.log('🌐 Cargando Lashistaes desde Supabase para negocio:', negocioId);
+        console.log('🌐 Cargando profesionales desde Supabase para negocio:', negocioId);
         
         const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&select=*&order=id.asc`,
+            `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&select=*&order=id.asc`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -35,25 +35,25 @@ async function cargarLashistaesDesdeDB() {
         if (!response.ok) return null;
         
         const data = await response.json();
-        LashistaesCache = data;
-        ultimaActualizacionLashistaes = Date.now();
+        profesionalesCache = data;
+        ultimaActualizacionprofesionales = Date.now();
         return data;
     } catch (error) {
-        console.error('Error cargando Lashistaes:', error);
+        console.error('Error cargando profesionales:', error);
         return null;
     }
 }
 
-window.salonLashistaes = {
+window.salonprofesionales = {
     getAll: async function(activos = true) {
-        if (Date.now() - ultimaActualizacionLashistaes < CACHE_DURATION_LashistaES && LashistaesCache.length > 0) {
+        if (Date.now() - ultimaActualizacionprofesionales < CACHE_DURATION_profesionales && profesionalesCache.length > 0) {
             if (activos) {
-                return LashistaesCache.filter(p => p.activo === true);
+                return profesionalesCache.filter(p => p.activo === true);
             }
-            return [...LashistaesCache];
+            return [...profesionalesCache];
         }
         
-        const datos = await cargarLashistaesDesdeDB();
+        const datos = await cargarprofesionalesDesdeDB();
         if (datos) {
             if (activos) {
                 return datos.filter(p => p.activo === true);
@@ -67,7 +67,7 @@ window.salonLashistaes = {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&id=eq.${id}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=eq.${id}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -91,7 +91,7 @@ window.salonLashistaes = {
             console.log('➕ Creando Lashista para negocio:', negocioId);
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/Lashistaes`,
+                `${window.SUPABASE_URL}/rest/v1/profesionales`,
                 {
                     method: 'POST',
                     headers: {
@@ -117,10 +117,10 @@ window.salonLashistaes = {
             if (!response.ok) return null;
             
             const nuevo = await response.json();
-            LashistaesCache = await cargarLashistaesDesdeDB() || LashistaesCache;
+            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
-                window.dispatchEvent(new Event('LashistaesActualizados'));
+                window.dispatchEvent(new Event('profesionalesActualizados'));
             }
             
             return nuevo[0];
@@ -136,7 +136,7 @@ window.salonLashistaes = {
             console.log('✏️ Actualizando Lashista:', id, 'negocio:', negocioId);
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&id=eq.${id}`,
+                `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=eq.${id}`,
                 {
                     method: 'PATCH',
                     headers: {
@@ -152,10 +152,10 @@ window.salonLashistaes = {
             if (!response.ok) return null;
             
             const actualizado = await response.json();
-            LashistaesCache = await cargarLashistaesDesdeDB() || LashistaesCache;
+            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
-                window.dispatchEvent(new Event('LashistaesActualizados'));
+                window.dispatchEvent(new Event('profesionalesActualizados'));
             }
             
             return actualizado[0];
@@ -171,7 +171,7 @@ window.salonLashistaes = {
             console.log('🗑️ Eliminando Lashista:', id, 'negocio:', negocioId);
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&id=eq.${id}`,
+                `${window.SUPABASE_URL}/rest/v1/profesionales?negocio_id=eq.${negocioId}&id=eq.${id}`,
                 {
                     method: 'DELETE',
                     headers: {
@@ -184,10 +184,10 @@ window.salonLashistaes = {
             
             if (!response.ok) return false;
             
-            LashistaesCache = await cargarLashistaesDesdeDB() || LashistaesCache;
+            profesionalesCache = await cargarprofesionalesDesdeDB() || profesionalesCache;
             
             if (window.dispatchEvent) {
-                window.dispatchEvent(new Event('LashistaesActualizados'));
+                window.dispatchEvent(new Event('profesionalesActualizados'));
             }
             
             return true;
@@ -199,5 +199,5 @@ window.salonLashistaes = {
 };
 
 setTimeout(async () => {
-    await window.salonLashistaes.getAll(false);
+    await window.salonprofesionales.getAll(false);
 }, 1000);

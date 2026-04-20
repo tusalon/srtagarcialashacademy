@@ -1,6 +1,6 @@
-﻿// components/admin/LashistaesPanel.js
+﻿// components/admin/ProfesionalesPanell.js
 
-function LashistaesPanel() {
+function ProfesionalesPanel() {
     const [Lashistaes, setLashistaes] = React.useState([]);
     const [mostrarForm, setMostrarForm] = React.useState(false);
     const [editando, setEditando] = React.useState(null);

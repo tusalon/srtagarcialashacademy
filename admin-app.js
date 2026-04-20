@@ -1613,7 +1613,7 @@ Cualquier cambio, podÃ©s cancelarlo desde la app con hasta 1 hora de anticipaciÃ
                 )}
 
                 {tabActivo === 'profesionales' && (userRole === 'admin' || userNivel >= 3) && (
-                    <profesionalesPanel />
+                    <ProfesionalesPanel />
                 )}
 
                 {tabActivo === 'clientes' && (userRole === 'admin' || userNivel >= 2) && (

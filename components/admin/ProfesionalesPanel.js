@@ -329,3 +329,4 @@ function LashistaForm({ Lashista, onGuardar, onCancelar }) {
         </form>
     );
 }
+window.ProfesionalesPanel = ProfesionalesPanel;

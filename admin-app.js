@@ -190,30 +190,6 @@ async function marcarTurnosCompletados() {
         console.log('📅 Fecha LOCAL actual:', hoy);
         console.log('🕐 Hora LOCAL actual:', `${horaActual}:${minutosActuales}`);
         
-       // ✅ CORRECTO (reemplazar líneas 189-261 completas)
-async function marcarTurnosCompletados() {
-    try {
-        const negocioId = getNegocioId();
-        if (!negocioId) {
-            console.error('❌ No hay negocioId disponible');
-            return;
-        }
-        
-        const ahora = new Date();
-        const año = ahora.getFullYear();
-        const mes = (ahora.getMonth() + 1).toString().padStart(2, '0');
-        const dia = ahora.getDate().toString().padStart(2, '0');
-        const hoy = `${año}-${mes}-${dia}`;
-        
-        const horaActual = ahora.getHours();
-        const minutosActuales = ahora.getMinutes();
-        const totalMinutosActual = horaActual * 60 + minutosActuales;
-        
-        console.log('⏰ Verificando turnos para marcar como completados...');
-        console.log('📅 Fecha LOCAL actual:', hoy);
-        console.log('🕐 Hora LOCAL actual:', `${horaActual}:${minutosActuales}`);
-        
-        // ✅ CORREGIDO: Usar query params correctos
         const responsePasados = await fetch(
             `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=lt.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
             {
@@ -232,7 +208,6 @@ async function marcarTurnosCompletados() {
         
         const turnosPasados = await responsePasados.json();
         
-        // ✅ CORREGIDO: Misma corrección para turnos de hoy
         const responseHoy = await fetch(
             `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=eq.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
             {
@@ -285,7 +260,6 @@ async function marcarTurnosCompletados() {
         console.error('Error marcando turnos completados:', error);
     }
 }
-
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================

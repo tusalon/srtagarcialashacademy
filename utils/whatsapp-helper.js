@@ -37,6 +37,7 @@ window.esIOS = function() {
 
 // Normaliza números de Cuba para WhatsApp.
 // Ej: 53066647 (local) -> 5353066647, 5353066647 -> 5353066647.
+// Números incompletos como 73831 se consideran inválidos.
 window.normalizarTelefonoWhatsApp = function(telefono) {
     let numero = (telefono || '').toString().replace(/\D/g, '');
 
@@ -56,7 +57,7 @@ window.normalizarTelefonoWhatsApp = function(telefono) {
         return `53${numero}`;
     }
 
-    return numero;
+    return null;
 };
 
 // ============================================
@@ -67,6 +68,12 @@ window.enviarWhatsApp = function(telefono, mensaje) {
         console.log('📤 enviarWhatsApp llamado a:', telefono);
         
         const numeroCompleto = window.normalizarTelefonoWhatsApp(telefono);
+
+        if (!numeroCompleto) {
+            alert('El número de WhatsApp no es válido. Debe tener 8 dígitos después del +53.');
+            console.error('❌ Número de WhatsApp inválido:', telefono);
+            return false;
+        }
         
         const mensajeCodificado = encodeURIComponent(mensaje);
         

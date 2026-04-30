@@ -46,6 +46,12 @@ function WelcomeScreen({ onStart, onGoBack, cliente, userRol }) {
         const telefonoLimpio = window.normalizarTelefonoWhatsApp 
             ? window.normalizarTelefonoWhatsApp(config.telefono)
             : config.telefono.replace(/\D/g, '');
+
+        if (!telefonoLimpio) {
+            alert('📱 El número de WhatsApp configurado no es válido');
+            return;
+        }
+
         const mensaje = encodeURIComponent(`Hola! Quiero consultar sobre turnos en ${config?.nombre || 'el salón'}`);
         
         // Abrir WhatsApp

@@ -143,7 +143,7 @@ window.enviarMensajePago = async function(booking, configNegocio) {
             window.formatTo12Hour(booking.hora_inicio) : 
             booking.hora_inicio;
 
-        const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+        const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
 
         const mensajeFinal = 
 `💫 *${configNegocio.nombre || 'Mi Salón'} - Confirmación de Turno*
@@ -212,7 +212,7 @@ Hola *${booking.cliente_nombre}*, tu turno ha sido agendado.
 📅 *Fecha:* ${fechaConDia}
 ⏰ *Hora:* ${horaFormateada}
 💫 *Servicio:*${booking.servicio}
-👁️ *Lashista:* ${booking.Lashista_nombre || booking.trabajador_nombre}
+👁️ *Lashista:* ${booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre}
 
 ¡Te esperamos! ❤️`;
 
@@ -259,7 +259,7 @@ Hola *${booking.cliente_nombre}*, ¡tu turno ha sido CONFIRMADO!
 📅 *Fecha:* ${fechaConDia}
 ⏰ *Hora:* ${horaFormateada}
 💫 *Servicio:* ${booking.servicio}
-👁️ *Lashista:* ${booking.Lashista_nombre || booking.trabajador_nombre}
+👁️ *Lashista:* ${booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre}
 
 ✅ *Pago recibido correctamente*
 
@@ -299,7 +299,7 @@ window.notificarNuevaReserva = async function(booking) {
             window.formatTo12Hour(booking.hora_inicio) : 
             booking.hora_inicio;
             
-        const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+        const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
         
         const mensajeWhatsApp = 
 `🎉 *NUEVA RESERVA - ${config.nombre}*
@@ -378,7 +378,7 @@ window.notificarReservaPendiente = async function(booking) {
                 window.formatTo12Hour(booking.hora_inicio) : 
                 booking.hora_inicio;
 
-            const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+            const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
 
             const mensajeFinal = 
 `💫 *${configNegocio.nombre || 'Mi Salón'} - Confirmación de Turno*
@@ -434,7 +434,7 @@ El turno se cancelará automáticamente si no se confirma el pago dentro de las 
             window.formatTo12Hour(booking.hora_inicio) : 
             booking.hora_inicio;
             
-        const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+        const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
         
         const mensajeWhatsApp = 
 `🆕 *RESERVA PENDIENTE DE PAGO - ${config.nombre}*
@@ -495,7 +495,7 @@ window.notificarCancelacion = async function(booking) {
             window.formatTo12Hour(booking.hora_inicio) : 
             booking.hora_inicio;
             
-        const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+        const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
         const canceladoPor = booking.cancelado_por || 'admin';
         
         // Mensaje para el dueño (si canceló el cliente)

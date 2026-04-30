@@ -154,3 +154,12 @@ function LashistaSelector({ onSelect, selectedLashista, selectedService }) {
         </div>
     );
 }
+
+// Nombre usado por client-app.js. Se mantiene LashistaSelector para no romper
+// cualquier referencia anterior, y ProfesionalSelector como alias funcional.
+function ProfesionalSelector(props) {
+    return <LashistaSelector {...props} />;
+}
+
+window.LashistaSelector = LashistaSelector;
+window.ProfesionalSelector = ProfesionalSelector;

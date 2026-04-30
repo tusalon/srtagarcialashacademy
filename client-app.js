@@ -35,7 +35,7 @@ function ClientApp() {
     // ============================================
     React.useEffect(() => {
         const adminAuth = localStorage.getItem('adminAuth') === 'true';
-        const LashistaAuth = localStorage.getItem('LashistaAuth');
+        const LashistaAuth = localStorage.getItem('LashistaAuth') || localStorage.getItem('profesionalAuth');
         const clienteAuth = localStorage.getItem('clienteAuth');
         
         if (adminAuth) {

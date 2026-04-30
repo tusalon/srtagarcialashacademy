@@ -1236,6 +1236,7 @@ Cualquier cambio, pod√©s cancelarlo desde la app con hasta 1 hora de anticipaci√
             localStorage.removeItem('adminUser');
             localStorage.removeItem('adminLoginTime');
             localStorage.removeItem('LashistaAuth');
+            localStorage.removeItem('profesionalAuth');
             localStorage.removeItem('userRole');
             localStorage.removeItem('clienteAuth');
             localStorage.removeItem('negocioId');

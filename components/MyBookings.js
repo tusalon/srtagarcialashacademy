@@ -282,7 +282,7 @@ Si no puedes asistir, contactanos por WhatsApp al +53 ${telefonoDuenno}`;
                                 window.formatFechaCompleta(booking.fecha) : 
                                 booking.fecha;
                             
-                            const Lashista = booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada';
+                            const Lashista = booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada';
                             
                             return (
                                 <div

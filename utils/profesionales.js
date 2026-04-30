@@ -198,6 +198,12 @@ window.salonProfesionales = {
     }
 };
 
+// Aliases de compatibilidad: varias pantallas antiguas usan nombres en minúscula
+// o el término Lashista. Todas apuntan al mismo gestor real de profesionales.
+window.salonprofesionales = window.salonProfesionales;
+window.salonLashistaes = window.salonProfesionales;
+window.salonlashistaes = window.salonProfesionales;
+
 setTimeout(async () => {
     await window.salonProfesionales.getAll(false);
 }, 1000);

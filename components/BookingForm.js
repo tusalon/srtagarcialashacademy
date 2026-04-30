@@ -107,7 +107,8 @@ function BookingForm({ service, Lashista, date, time, onSubmit, onCancel, client
         const linea1 = `Appointment Details`;
         const linea2 = `When: ${fechaInicioStr} - ${fechaFinStr} (CST)`;
         const linea3 = `Service: ${bookingData.servicio}`;
-        const linea4 = `Provider Name: ${bookingData.Lashista_nombre}`;
+        const nombreProfesional = bookingData.Lashista_nombre || bookingData.profesional_nombre || bookingData.trabajador_nombre || 'No asignada';
+        const linea4 = `Provider Name: ${nombreProfesional}`;
         const linea5 = `Client: ${bookingData.cliente_nombre}`;
         const linea6 = `WhatsApp: +53 ${bookingData.cliente_whatsapp}`;
         const linea7 = ``;
@@ -145,7 +146,7 @@ SEQUENCE:0
 DTSTAMP:${dtstamp}
 DTSTART;TZID=America/Havana:${dtstart}
 DTEND;TZID=America/Havana:${dtend}
-SUMMARY:${bookingData.servicio} with ${bookingData.Lashista_nombre}
+SUMMARY:${bookingData.servicio} with ${nombreProfesional}
 TRANSP:OPAQUE
 LOCATION:${nombreNegocio}
 DESCRIPTION:${descripcion}

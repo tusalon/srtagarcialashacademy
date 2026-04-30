@@ -1,4 +1,4 @@
-﻿// components/admin/ServiciosPanel.js - CON ASIGNACIÓN DE LashistaES
+﻿// components/admin/ServiciosPanel.js - CON ASIGNACIÓN DE PROFESIONALES
 
 function ServiciosPanel() {
     const [servicios, setServicios] = React.useState([]);
@@ -52,7 +52,7 @@ function ServiciosPanel() {
     };
 
     const handleEliminar = async (id) => {
-        if (!confirm('¿Eliminar este servicio? También se eliminarán las asignaciones de Lashistaes.')) return;
+        if (!confirm('¿Eliminar este servicio? También se eliminarán las asignaciones de profesionales.')) return;
         try {
             console.log('🗑️ Eliminando servicio:', id);
             await window.salonServicios.eliminar(id);
@@ -150,7 +150,7 @@ function ServiciosPanel() {
                                     <button
                                         onClick={() => setServicioParaAsignar(s)}
                                         className="text-purple-600 hover:text-purple-800 px-2"
-                                        title="Asignar Lashistaes a este servicio"
+                                        title="Asignar profesionales a este servicio"
                                     >
                                         👥
                                     </button>
@@ -178,9 +178,8 @@ function ServiciosPanel() {
                 )}
             </div>
 
-            {/* Modal para asignar Lashistaes */}
             {servicioParaAsignar && (
-                <AsignarLashistaesModal
+                <AsignarProfesionalesModal
                     servicio={servicioParaAsignar}
                     onClose={() => setServicioParaAsignar(null)}
                 />
@@ -189,7 +188,6 @@ function ServiciosPanel() {
     );
 }
 
-// COMPONENTE DE FORMULARIO DE SERVICIO
 function ServicioForm({ servicio, onGuardar, onCancelar }) {
     const [form, setForm] = React.useState(servicio || {
         nombre: '',
@@ -318,7 +316,7 @@ function ServicioForm({ servicio, onGuardar, onCancelar }) {
                     />
                     <p className="text-xs text-gray-400 mt-1">
                         Horarios específicos en que está disponible este servicio (formato HH:MM separados por comas). 
-                        Si se deja vacío, se mostrarán todos los horarios del Lashista.
+                        Si se deja vacío, se mostrarán todos los horarios del profesional.
                     </p>
                 </div>
                 
@@ -355,9 +353,8 @@ function ServicioForm({ servicio, onGuardar, onCancelar }) {
     );
 }
 
-// 🔥 COMPONENTE MODAL: Asignar Lashistaes a Servicio
-function AsignarLashistaesModal({ servicio, onClose }) {
-    const [Lashistaes, setLashistaes] = React.useState([]);
+function AsignarProfesionalesModal({ servicio, onClose }) {
+    const [profesionales, setProfesionales] = React.useState([]);
     const [asignados, setAsignados] = React.useState([]);
     const [cargando, setCargando] = React.useState(true);
     const [guardando, setGuardando] = React.useState(false);
@@ -369,13 +366,13 @@ function AsignarLashistaesModal({ servicio, onClose }) {
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            if (window.salonLashistaes) {
-                const todos = await window.salonLashistaes.getAll(true);
-                setLashistaes(todos || []);
+            if (window.salonprofesionales) {
+                const todos = await window.salonprofesionales.getAll(true);
+                setProfesionales(todos || []);
             }
             
-            if (window.getLashistaesPorServicio) {
-                const asignadosData = await window.getLashistaesPorServicio(servicio.id);
+            if (window.getProfesionalesPorServicio) {
+                const asignadosData = await window.getProfesionalesPorServicio(servicio.id);
                 setAsignados(asignadosData.map(p => p.id));
             }
         } catch (error) {
@@ -385,27 +382,27 @@ function AsignarLashistaesModal({ servicio, onClose }) {
         }
     };
 
-    const toggleLashista = async (LashistaId) => {
+    const toggleProfesional = async (profesionalId) => {
         setGuardando(true);
         try {
-            if (asignados.includes(LashistaId)) {
-                if (window.removerLashistaDeServicio) {
-                    const ok = await window.removerLashistaDeServicio(servicio.id, LashistaId);
+            if (asignados.includes(profesionalId)) {
+                if (window.removerProfesionalDeServicio) {
+                    const ok = await window.removerProfesionalDeServicio(servicio.id, profesionalId);
                     if (ok) {
-                        setAsignados(asignados.filter(id => id !== LashistaId));
+                        setAsignados(asignados.filter(id => id !== profesionalId));
                     }
                 }
             } else {
-                if (window.asignarLashistaAServicio) {
-                    const ok = await window.asignarLashistaAServicio(servicio.id, LashistaId);
+                if (window.asignarProfesionalAServicio) {
+                    const ok = await window.asignarProfesionalAServicio(servicio.id, profesionalId);
                     if (ok) {
-                        setAsignados([...asignados, LashistaId]);
+                        setAsignados([...asignados, profesionalId]);
                     }
                 }
             }
         } catch (error) {
             console.error('Error cambiando asignación:', error);
-            alert('Error al asignar Lashista');
+            alert('Error al asignar profesional');
         } finally {
             setGuardando(false);
         }
@@ -416,7 +413,7 @@ function AsignarLashistaesModal({ servicio, onClose }) {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-xl p-6">
                     <div className="animate-spin h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">Cargando Lashistaes...</p>
+                    <p className="text-gray-500 mt-4">Cargando profesionales...</p>
                 </div>
             </div>
         );
@@ -427,7 +424,7 @@ function AsignarLashistaesModal({ servicio, onClose }) {
             <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
                     <h3 className="text-lg font-bold">
-                        👥 Lashistaes para "{servicio.nombre}"
+                        👥 Profesionales para "{servicio.nombre}"
                     </h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">
                         ×
@@ -436,27 +433,27 @@ function AsignarLashistaesModal({ servicio, onClose }) {
                 
                 <div className="p-4">
                     <p className="text-sm text-gray-500 mb-4">
-                        Seleccioná qué Lashistaes pueden realizar este servicio.
+                        Seleccioná qué profesionales pueden realizar este servicio.
                         <br />
                         <span className="text-purple-700 text-xs">
-                            Los clientes solo verán los Lashistaes marcados aquí.
+                            Los clientes solo verán los profesionales marcados aquí.
                         </span>
                     </p>
                     
                     <div className="space-y-2">
-                        {Lashistaes.length === 0 ? (
+                        {profesionales.length === 0 ? (
                             <p className="text-center text-gray-500 py-4">
-                                No hay Lashistaes activos. 
+                                No hay profesionales activos. 
                                 <br />
-                                <span className="text-xs">Creá Lashistaes en la pestaña "Lashistaes"</span>
+                                <span className="text-xs">Creá profesionales en la pestaña "Profesionales"</span>
                             </p>
                         ) : (
-                            Lashistaes.map(prof => {
+                            profesionales.map(prof => {
                                 const isSelected = asignados.includes(prof.id);
                                 return (
                                     <button
                                         key={prof.id}
-                                        onClick={() => toggleLashista(prof.id)}
+                                        onClick={() => toggleProfesional(prof.id)}
                                         disabled={guardando}
                                         className={`
                                             w-full flex items-center gap-3 p-3 rounded-lg border transition-all
@@ -488,7 +485,7 @@ function AsignarLashistaesModal({ servicio, onClose }) {
                 <div className="sticky bottom-0 bg-white p-4 border-t">
                     <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-500">
-                            {asignados.length} de {Lashistaes.length} Lashistaes seleccionados
+                            {asignados.length} de {profesionales.length} profesionales seleccionados
                         </div>
                         <button
                             onClick={onClose}
@@ -502,3 +499,5 @@ function AsignarLashistaesModal({ servicio, onClose }) {
         </div>
     );
 }
+
+window.ServiciosPanel = ServiciosPanel;

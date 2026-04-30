@@ -1,65 +1,67 @@
-﻿// components/admin/ProfesionalesPanell.js
+﻿// components/admin/ProfesionalesPanel.js
 
 function ProfesionalesPanel() {
-    const [Lashistaes, setLashistaes] = React.useState([]);
+    const [profesionales, setProfesionales] = React.useState([]);
     const [mostrarForm, setMostrarForm] = React.useState(false);
     const [editando, setEditando] = React.useState(null);
     const [cargando, setCargando] = React.useState(true);
 
     React.useEffect(() => {
-        cargarLashistaes();
+        cargarProfesionales();
     }, []);
 
-    const cargarLashistaes = async () => {
+    const cargarProfesionales = async () => {
         setCargando(true);
         try {
-            console.log('📋 Cargando Lashistaes...');
-            if (window.salonLashistaes) {
-                const lista = await window.salonLashistaes.getAll(false);
-                console.log('✅ Lashistaes obtenidos:', lista);
-                setLashistaes(lista || []);
+            console.log('📋 Cargando profesionales...');
+            if (window.salonprofesionales) {
+                const lista = await window.salonprofesionales.getAll(false);
+                console.log('✅ Profesionales obtenidos:', lista);
+                setProfesionales(lista || []);
+            } else {
+                console.error('❌ window.salonprofesionales no está definido');
             }
         } catch (error) {
-            console.error('Error cargando Lashistaes:', error);
+            console.error('Error cargando profesionales:', error);
         } finally {
             setCargando(false);
         }
     };
 
-    const handleGuardar = async (Lashista) => {
+    const handleGuardar = async (profesional) => {
         try {
-            console.log('💾 Guardando Lashista:', Lashista);
+            console.log('💾 Guardando profesional:', profesional);
             if (editando) {
-                await window.salonLashistaes.actualizar(editando.id, Lashista);
+                await window.salonprofesionales.actualizar(editando.id, profesional);
             } else {
-                await window.salonLashistaes.crear(Lashista);
+                await window.salonprofesionales.crear(profesional);
             }
-            await cargarLashistaes();
+            await cargarProfesionales();
             setMostrarForm(false);
             setEditando(null);
         } catch (error) {
-            console.error('Error guardando Lashista:', error);
-            alert('Error al guardar el Lashista');
+            console.error('Error guardando profesional:', error);
+            alert('Error al guardar el profesional');
         }
     };
 
     const handleEliminar = async (id) => {
-        if (!confirm('¿Eliminar este Lashista?')) return;
+        if (!confirm('¿Eliminar este profesional?')) return;
         try {
-            console.log('🗑️ Eliminando Lashista:', id);
-            await window.salonLashistaes.eliminar(id);
-            await cargarLashistaes();
+            console.log('🗑️ Eliminando profesional:', id);
+            await window.salonprofesionales.eliminar(id);
+            await cargarProfesionales();
         } catch (error) {
-            console.error('Error eliminando Lashista:', error);
-            alert('Error al eliminar el Lashista');
+            console.error('Error eliminando profesional:', error);
+            alert('Error al eliminar el profesional');
         }
     };
 
     const toggleActivo = async (id) => {
-        const Lashista = Lashistaes.find(p => p.id === id);
+        const profesional = profesionales.find(p => p.id === id);
         try {
-            await window.salonLashistaes.actualizar(id, { activo: !Lashista.activo });
-            await cargarLashistaes();
+            await window.salonprofesionales.actualizar(id, { activo: !profesional.activo });
+            await cargarProfesionales();
         } catch (error) {
             console.error('Error cambiando estado:', error);
         }
@@ -79,7 +81,7 @@ function ProfesionalesPanel() {
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">Cargando Lashistaes...</p>
+                    <p className="text-gray-500 mt-4">Cargando profesionales...</p>
                 </div>
             </div>
         );
@@ -88,21 +90,21 @@ function ProfesionalesPanel() {
     return (
         <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">👥 Lashistaes</h2>
+                <h2 className="text-xl font-bold">👥 Profesionales</h2>
                 <button
                     onClick={() => {
                         setEditando(null);
                         setMostrarForm(true);
                     }}
-                    className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
+                    className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800"
                 >
-                    + Nuevo Lashista
+                    + Nuevo Profesional
                 </button>
             </div>
 
             {mostrarForm && (
-                <LashistaForm
-                    Lashista={editando}
+                <ProfesionalForm
+                    profesional={editando}
                     onGuardar={handleGuardar}
                     onCancelar={() => {
                         setMostrarForm(false);
@@ -112,12 +114,12 @@ function ProfesionalesPanel() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Lashistaes.length === 0 ? (
+                {profesionales.length === 0 ? (
                     <div className="col-span-2 text-center py-8 text-gray-500">
-                        No hay Lashistaes cargados
+                        No hay profesionales cargados
                     </div>
                 ) : (
-                    Lashistaes.map(p => (
+                    profesionales.map(p => (
                         <div key={p.id} className={`border rounded-lg p-4 ${p.activo ? '' : 'opacity-50 bg-gray-50'}`}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
@@ -183,8 +185,8 @@ function ProfesionalesPanel() {
     );
 }
 
-function LashistaForm({ Lashista, onGuardar, onCancelar }) {
-    const [form, setForm] = React.useState(Lashista || {
+function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
+    const [form, setForm] = React.useState(profesional || {
         nombre: '',
         especialidad: '',
         telefono: '',
@@ -196,17 +198,15 @@ function LashistaForm({ Lashista, onGuardar, onCancelar }) {
 
     const avatares = ['👤', '💇', '💫', '👑', '⭐', '🔰'];
     const colores = [
-        { value: 'bg-purple-700', label: 'Ámbar' },
-        { value: 'bg-amber-700', label: 'Ámbar Oscuro' },
-        { value: 'bg-purple-600', label: 'Rosa' },
-        { value: 'bg-purple-500', label: 'Púrpura' },
+        { value: 'bg-purple-700', label: 'Púrpura' },
+        { value: 'bg-pink-500', label: 'Rosa' },
         { value: 'bg-blue-500', label: 'Azul' },
         { value: 'bg-green-500', label: 'Verde' }
     ];
     
     const niveles = [
         { value: 1, label: '🔰 Básico - Solo ver reservas', desc: 'Acceso limitado a reservas' },
-        { value: 2, label: '⭐ Intermedio - Reservas + Configuración propia + Clientes', desc: 'Puede ver configuración (solo sus horarios) y clientes' },
+        { value: 2, label: '⭐ Intermedio - Reservas + Configuración propia + Clientes', desc: 'Puede ver configuración y clientes' },
         { value: 3, label: '👑 Avanzado - Acceso total', desc: 'Puede gestionar todo como el dueño' }
     ];
 
@@ -218,7 +218,7 @@ function LashistaForm({ Lashista, onGuardar, onCancelar }) {
     return (
         <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold mb-4">
-                {Lashista ? '✏️ Editar Lashista' : '➕ Nuevo Lashista'}
+                {profesional ? '✏️ Editar Profesional' : '➕ Nuevo Profesional'}
             </h3>
             
             <div className="space-y-3">
@@ -277,7 +277,6 @@ function LashistaForm({ Lashista, onGuardar, onCancelar }) {
                             placeholder="55002272"
                         />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">8 dígitos después del +53</p>
                 </div>
                 
                 <div>
@@ -324,9 +323,10 @@ function LashistaForm({ Lashista, onGuardar, onCancelar }) {
             
             <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={onCancelar} className="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-amber-700">Guardar</button>
+                <button type="submit" className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800">Guardar</button>
             </div>
         </form>
     );
 }
+
 window.ProfesionalesPanel = ProfesionalesPanel;

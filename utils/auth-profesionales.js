@@ -20,30 +20,33 @@ window.loginLashista = async function(telefono, password) {
     try {
         const negocioId = getNegocioId();
         console.log('🔐 Intentando login de Lashista:', telefono, 'negocio:', negocioId);
-        
-        const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&password=eq.${password}&activo=eq.true&select=*`,
-            {
-                headers: {
-                    'apikey': window.SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                    'Content-Type': 'application/json'
+
+        const tablas = ['profesionales', 'Lashistaes'];
+        for (const tabla of tablas) {
+            const response = await fetch(
+                `${window.SUPABASE_URL}/rest/v1/${tabla}?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&password=eq.${password}&activo=eq.true&select=*`,
+                {
+                    headers: {
+                        'apikey': window.SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
+            );
+
+            if (!response.ok) {
+                console.warn(`⚠️ No se pudo consultar ${tabla}:`, await response.text());
+                continue;
             }
-        );
-        
-        if (!response.ok) {
-            console.error('Error response:', await response.text());
-            return null;
+
+            const data = await response.json();
+            console.log(`📋 Resultado login en ${tabla}:`, data);
+
+            if (data && data.length > 0) {
+                return data[0];
+            }
         }
-        
-        const data = await response.json();
-        console.log('📋 Resultado login:', data);
-        
-        if (data && data.length > 0) {
-            const Lashista = data[0];
-            return Lashista;
-        }
+
         return null;
     } catch (error) {
         console.error('Error en loginLashista:', error);
@@ -55,29 +58,33 @@ window.verificarLashistaPorTelefono = async function(telefono) {
     try {
         const negocioId = getNegocioId();
         console.log('🔍 Verificando si es Lashista (solo teléfono):', telefono, 'negocio:', negocioId);
-        
-        const response = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&activo=eq.true&select=id,nombre,telefono,nivel`,
-            {
-                headers: {
-                    'apikey': window.SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                    'Content-Type': 'application/json'
+
+        const tablas = ['profesionales', 'Lashistaes'];
+        for (const tabla of tablas) {
+            const response = await fetch(
+                `${window.SUPABASE_URL}/rest/v1/${tabla}?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&activo=eq.true&select=id,nombre,telefono,nivel`,
+                {
+                    headers: {
+                        'apikey': window.SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
+            );
+
+            if (!response.ok) {
+                console.warn(`⚠️ No se pudo consultar ${tabla}:`, await response.text());
+                continue;
             }
-        );
-        
-        if (!response.ok) {
-            console.error('Error response:', await response.text());
-            return null;
+
+            const data = await response.json();
+            console.log(`📋 Resultado verificación en ${tabla}:`, data);
+
+            if (data && data.length > 0) {
+                return data[0];
+            }
         }
-        
-        const data = await response.json();
-        console.log('📋 Resultado verificación:', data);
-        
-        if (data && data.length > 0) {
-            return data[0];
-        }
+
         return null;
     } catch (error) {
         console.error('Error verificando Lashista:', error);
@@ -86,7 +93,7 @@ window.verificarLashistaPorTelefono = async function(telefono) {
 };
 
 window.getLashistaAutenticado = function() {
-    const auth = localStorage.getItem('LashistaAuth');
+    const auth = localStorage.getItem('LashistaAuth') || localStorage.getItem('profesionalAuth');
     if (auth) {
         try {
             return JSON.parse(auth);
@@ -108,29 +115,15 @@ window.obtenerRolUsuario = async function(telefono) {
         
         const telefonoLimpio = telefono.replace(/\D/g, '');
         
-        // Verificar si es Lashista
-        const LashistaRes = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/Lashistaes?negocio_id=eq.${negocioId}&telefono=eq.${telefonoLimpio}&activo=eq.true&select=id,nombre,nivel`,
-            {
-                headers: {
-                    'apikey': window.SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        
-        if (LashistaRes.ok) {
-            const Lashistaes = await LashistaRes.json();
-            if (Lashistaes && Lashistaes.length > 0) {
-                console.log('👨‍🎨 Es Lashista:', Lashistaes[0].nombre);
-                return {
-                    rol: 'Lashista',
-                    id: Lashistaes[0].id,
-                    nombre: Lashistaes[0].nombre,
-                    nivel: Lashistaes[0].nivel || 1
-                };
-            }
+        const Lashista = await window.verificarLashistaPorTelefono(telefonoLimpio);
+        if (Lashista) {
+            console.log('👨‍🎨 Es Lashista:', Lashista.nombre);
+            return {
+                rol: 'Lashista',
+                id: Lashista.id,
+                nombre: Lashista.nombre,
+                nivel: Lashista.nivel || 1
+            };
         }
         
         return {
@@ -148,6 +141,11 @@ window.tieneAccesoPanel = async function(telefono) {
     const rol = await window.obtenerRolUsuario(telefono);
     return rol.rol === 'admin' || rol.rol === 'Lashista';
 };
+
+// Aliases de compatibilidad con pantallas que ya usan "profesional".
+window.loginProfesional = window.loginLashista;
+window.verificarProfesionalPorTelefono = window.verificarLashistaPorTelefono;
+window.getProfesionalAutenticado = window.getLashistaAutenticado;
 
 // ============================================
 // FUNCIONES PARA RESERVAS DE LashistaES

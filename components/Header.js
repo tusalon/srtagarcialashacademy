@@ -12,7 +12,7 @@ function Header({ cliente, onLogout, onMisReservas, onGoBack, userRol, showBackB
 
     const goToAdmin = () => {
         const isAdmin = localStorage.getItem('adminAuth') === 'true';
-        const LashistaAuth = localStorage.getItem('LashistaAuth');
+        const LashistaAuth = localStorage.getItem('LashistaAuth') || localStorage.getItem('profesionalAuth');
         
         if (isAdmin || LashistaAuth) {
             window.location.href = 'admin.html';

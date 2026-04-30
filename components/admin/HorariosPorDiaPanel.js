@@ -1,6 +1,6 @@
 ﻿// components/admin/HorariosPorDiaPanel.js - Panel para configurar horarios por día
 
-function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar }) {
+function HorariosPorDiaPanel({ profesionalId, profesionalNombre, onGuardar, onCancelar }) {
     const [horariosPorDia, setHorariosPorDia] = React.useState({});
     const [cargando, setCargando] = React.useState(true);
     const [diaSeleccionado, setDiaSeleccionado] = React.useState('lunes');
@@ -16,7 +16,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
         { id: 'domingo', nombre: 'Domingo' }
     ];
 
-    // Generar todas las horas posibles cada 30 minutos (de 0 a 23:30)
     const todasLasHoras = React.useMemo(() => {
         const horas = [];
         for (let i = 0; i < 48; i++) {
@@ -32,26 +31,23 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
     }, []);
 
     React.useEffect(() => {
-        if (LashistaId) {
+        if (profesionalId) {
             cargarHorarios();
         }
-    }, [LashistaId]);
+    }, [profesionalId]);
 
     const cargarHorarios = async () => {
         setCargando(true);
         try {
-            const horarios = await window.salonConfig.getHorariosPorDia(LashistaId);
+            const horarios = await window.salonConfig.getHorariosPorDia(profesionalId);
             console.log('📋 Horarios cargados por día:', horarios);
             
-            // Inicializar todos los días con array vacío si no existen
             const horariosInicializados = {};
             dias.forEach(dia => {
                 horariosInicializados[dia.id] = horarios[dia.id] || [];
             });
             
             setHorariosPorDia(horariosInicializados);
-            
-            // Actualizar horas disponibles para el día seleccionado
             setHorasDisponibles(horariosInicializados[diaSeleccionado] || []);
             
         } catch (error) {
@@ -71,11 +67,9 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
         const nuevasHoras = [...(horariosPorDia[diaSeleccionado] || [])];
         
         if (nuevasHoras.includes(indice)) {
-            // Quitar hora
             const index = nuevasHoras.indexOf(indice);
             nuevasHoras.splice(index, 1);
         } else {
-            // Agregar hora
             nuevasHoras.push(indice);
             nuevasHoras.sort((a, b) => a - b);
         }
@@ -93,7 +87,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
         const horasActuales = horariosPorDia[diaSeleccionado] || [];
         
         if (horasActuales.length === todasLasHoras.length) {
-            // Quitar todas
             const nuevosHorarios = {
                 ...horariosPorDia,
                 [diaSeleccionado]: []
@@ -101,7 +94,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
             setHorariosPorDia(nuevosHorarios);
             setHorasDisponibles([]);
         } else {
-            // Agregar todas
             const todas = todasLasHoras.map(h => h.indice);
             const nuevosHorarios = {
                 ...horariosPorDia,
@@ -133,7 +125,7 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
 
     const handleGuardar = async () => {
         try {
-            await window.salonConfig.guardarHorariosPorDia(LashistaId, horariosPorDia);
+            await window.salonConfig.guardarHorariosPorDia(profesionalId, horariosPorDia);
             onGuardar(horariosPorDia);
         } catch (error) {
             console.error('Error guardando:', error);
@@ -152,11 +144,10 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
     return (
         <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-lg font-bold mb-4">
-                📅 Horarios de {LashistaNombre} por día
+                📅 Horarios de {profesionalNombre} por día
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* Panel izquierdo: Selector de días */}
                 <div className="md:col-span-1 space-y-2">
                     <h4 className="font-medium text-gray-700 mb-2">Días de la semana</h4>
                     {dias.map(dia => {
@@ -190,7 +181,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
                     })}
                 </div>
                 
-                {/* Panel derecho: Horas para el día seleccionado */}
                 <div className="md:col-span-3">
                     <div className="flex justify-between items-center mb-4">
                         <h4 className="font-medium text-gray-700">
@@ -218,7 +208,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
                         </div>
                     </div>
                     
-                    {/* Selector para copiar horarios de otro día */}
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-2">
                         <span className="text-sm text-gray-600">Copiar horarios de:</span>
                         <select
@@ -238,7 +227,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
                         </select>
                     </div>
                     
-                    {/* Grilla de horas */}
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
                         {todasLasHoras.map(hora => {
                             const activa = horasDisponibles.includes(hora.indice);
@@ -260,12 +248,11 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
                     </div>
                     
                     <p className="text-xs text-gray-500 mt-2">
-                        ⏰ Horarios cada 30 minutos. Seleccioná las horas en las que {LashistaNombre} trabaja este día.
+                        ⏰ Horarios cada 30 minutos. Seleccioná las horas en las que {profesionalNombre} trabaja este día.
                     </p>
                 </div>
             </div>
             
-            {/* Resumen semanal */}
             <div className="mt-6 pt-4 border-t">
                 <h4 className="font-medium text-gray-700 mb-3">Resumen semanal:</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
@@ -283,7 +270,6 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
                 </div>
             </div>
             
-            {/* Botones de acción */}
             <div className="flex justify-end gap-3 mt-6">
                 <button
                     onClick={onCancelar}
@@ -301,3 +287,5 @@ function HorariosPorDiaPanel({ LashistaId, LashistaNombre, onGuardar, onCancelar
         </div>
     );
 }
+
+window.HorariosPorDiaPanel = HorariosPorDiaPanel;

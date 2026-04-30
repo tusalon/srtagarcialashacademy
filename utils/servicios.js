@@ -410,6 +410,18 @@ window.getprofesionalesConServicios = async function() {
     }
 };
 
+// Aliases de compatibilidad entre nombres antiguos (Lashista) y nuevos
+// (Profesional), y entre distintas capitalizaciones usadas por los paneles.
+window.getProfesionalesPorServicio = window.getprofesionalesPorServicio;
+window.getLashistaesPorServicio = window.getprofesionalesPorServicio;
+window.getlashistaesPorServicio = window.getprofesionalesPorServicio;
+window.asignarProfesionalAServicio = window.asignarprofesionalAServicio;
+window.asignarLashistaAServicio = window.asignarprofesionalAServicio;
+window.removerProfesionalDeServicio = window.removerprofesionalDeServicio;
+window.removerLashistaDeServicio = window.removerprofesionalDeServicio;
+window.getProfesionalesConServicios = window.getprofesionalesConServicios;
+window.getLashistaesConServicios = window.getprofesionalesConServicios;
+
 setTimeout(async () => {
     await window.salonServicios.getAll(false);
 }, 1000);

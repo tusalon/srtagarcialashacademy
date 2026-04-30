@@ -71,7 +71,7 @@ function Confirmation({ booking, onReset }) {
                     
                     <div>
                         <div className="text-xs text-purple-500 uppercase tracking-wider font-semibold mb-1">Lashista</div>
-                        <div className="font-medium text-pink-700">{booking.Lashista_nombre || booking.trabajador_nombre || 'No asignada'}</div>
+                        <div className="font-medium text-pink-700">{booking.Lashista_nombre || booking.profesional_nombre || booking.trabajador_nombre || 'No asignada'}</div>
                     </div>
                 </div>
             </div>

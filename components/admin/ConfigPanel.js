@@ -1,9 +1,8 @@
 ﻿// components/admin/ConfigPanel.js - Versión con Fechas Libres y Días Cerrados Globales
-// SIN DEPENDENCIA DE dias-cerrados.js
 
-function ConfigPanel({ LashistaId, modoRestringido }) {
-    const [Lashistaes, setLashistaes] = React.useState([]);
-    const [LashistaSeleccionado, setLashistaSeleccionado] = React.useState(null);
+function ConfigPanel({ profesionalId, modoRestringido }) {
+    const [profesionales, setProfesionales] = React.useState([]);
+    const [profesionalSeleccionado, setProfesionalSeleccionado] = React.useState(null);
     const [mostrarEditorPorDia, setMostrarEditorPorDia] = React.useState(false);
     const [configGlobal, setConfigGlobal] = React.useState({
         duracion_turnos: 60,
@@ -47,20 +46,20 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
     }, []);
 
     React.useEffect(() => {
-        if (modoRestringido && LashistaId) {
-            setLashistaSeleccionado(LashistaId);
+        if (modoRestringido && profesionalId) {
+            setProfesionalSeleccionado(profesionalId);
         }
-    }, [modoRestringido, LashistaId]);
+    }, [modoRestringido, profesionalId]);
 
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            if (window.salonLashistaes) {
-                const lista = await window.salonLashistaes.getAll(true);
-                setLashistaes(lista || []);
+            if (window.salonprofesionales) {
+                const lista = await window.salonprofesionales.getAll(true);
+                setProfesionales(lista || []);
                 
                 if (!modoRestringido && lista && lista.length > 0) {
-                    setLashistaSeleccionado(lista[0].id);
+                    setProfesionalSeleccionado(lista[0].id);
                 }
             }
             
@@ -81,8 +80,8 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
     };
 
     const abrirEditorPorDia = () => {
-        if (!LashistaSeleccionado) {
-            alert('Seleccioná un Lashista primero');
+        if (!profesionalSeleccionado) {
+            alert('Seleccioná un profesional primero');
             return;
         }
         setMostrarEditorPorDia(true);
@@ -118,7 +117,6 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
             
             {!modoRestringido && (
                 <>
-                    {/* CONFIGURACIÓN GENERAL */}
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
                         <h3 className="font-semibold text-lg mb-4">⚙️ Configuración General</h3>
                         
@@ -218,49 +216,47 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
                         </button>
                     </div>
 
-                    {/* NUEVO: DÍAS CERRADOS GLOBALES - SIN DEPENDENCIA EXTERNA */}
                     <DiasCerradosGlobalesPanel />
                 </>
             )}
             
-            {/* SECCIÓN DEL Lashista */}
             <div className="mb-6 p-4 border rounded-lg bg-white shadow-sm mt-6">
-                <h3 className="font-semibold text-lg mb-4">👥 Configuración del Lashista</h3>
+                <h3 className="font-semibold text-lg mb-4">👥 Configuración del Profesional</h3>
                 
                 {!modoRestringido && (
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Seleccionar Lashista
+                            Seleccionar Profesional
                         </label>
                         <div className="flex gap-2">
                             <select
-                                value={LashistaSeleccionado || ''}
-                                onChange={(e) => setLashistaSeleccionado(parseInt(e.target.value))}
+                                value={profesionalSeleccionado || ''}
+                                onChange={(e) => setProfesionalSeleccionado(parseInt(e.target.value))}
                                 className="flex-1 border rounded-lg px-3 py-2"
                             >
-                                <option value="">Seleccione un Lashista</option>
-                                {Lashistaes.map(p => (
+                                <option value="">Seleccione un profesional</option>
+                                {profesionales.map(p => (
                                     <option key={p.id} value={p.id}>{p.nombre}</option>
                                 ))}
                             </select>
                             
                             <button
                                 onClick={abrirEditorPorDia}
-                                disabled={!LashistaSeleccionado}
+                                disabled={!profesionalSeleccionado}
                                 className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Horarios por día
                             </button>
                         </div>
-                        {Lashistaes.length === 0 && !cargando && (
+                        {profesionales.length === 0 && !cargando && (
                             <p className="text-sm text-purple-700 mt-2">
-                                ⚠️ No hay Lashistaes activos.
+                                ⚠️ No hay profesionales activos.
                             </p>
                         )}
                     </div>
                 )}
                 
-                {modoRestringido && LashistaId && (
+                {modoRestringido && profesionalId && (
                     <div className="mb-4">
                         <button
                             onClick={abrirEditorPorDia}
@@ -271,23 +267,21 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
                     </div>
                 )}
 
-                {/* PANEL DE DÍAS LIBRES INDIVIDUALES */}
-                {LashistaSeleccionado && (
+                {profesionalSeleccionado && (
                     <FechasLibresPanel 
-                        LashistaId={LashistaSeleccionado} 
-                        Lashistaes={Lashistaes} 
+                        profesionalId={profesionalSeleccionado} 
+                        profesionales={profesionales} 
                         onActualizar={cargarDatos} 
                     />
                 )}
             </div>
             
-            {/* Modal para editor por día */}
-            {mostrarEditorPorDia && LashistaSeleccionado && (
+            {mostrarEditorPorDia && profesionalSeleccionado && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                         <HorariosPorDiaPanel
-                            LashistaId={LashistaSeleccionado}
-                            LashistaNombre={Lashistaes.find(p => p.id === LashistaSeleccionado)?.nombre || 'Lashista'}
+                            profesionalId={profesionalSeleccionado}
+                            profesionalNombre={profesionales.find(p => p.id === profesionalSeleccionado)?.nombre || 'Profesional'}
                             onGuardar={(horarios) => {
                                 setMostrarEditorPorDia(false);
                             }}
@@ -300,19 +294,16 @@ function ConfigPanel({ LashistaId, modoRestringido }) {
     );
 }
 
-// ==========================================
-// COMPONENTE: FECHAS LIBRES POR Lashista
-// ==========================================
-function FechasLibresPanel({ LashistaId, Lashistaes, onActualizar }) {
+function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
     const [fechas, setFechas] = React.useState([]);
     const [nuevaFecha, setNuevaFecha] = React.useState('');
-    const Lashista = Lashistaes.find(p => p.id === LashistaId);
+    const profesional = profesionales.find(p => p.id === profesionalId);
 
     React.useEffect(() => {
-        if (Lashista) {
-            setFechas(Lashista.fechas_libres || []);
+        if (profesional) {
+            setFechas(profesional.fechas_libres || []);
         }
-    }, [LashistaId, Lashista]);
+    }, [profesionalId, profesional]);
 
     const handleAgregar = async () => {
         if (!nuevaFecha) return;
@@ -334,8 +325,8 @@ function FechasLibresPanel({ LashistaId, Lashistaes, onActualizar }) {
 
     const guardarFechas = async (nuevasFechas) => {
         try {
-            if (window.salonLashistaes && window.salonLashistaes.actualizar) {
-                await window.salonLashistaes.actualizar(LashistaId, { fechas_libres: nuevasFechas });
+            if (window.salonprofesionales && window.salonprofesionales.actualizar) {
+                await window.salonprofesionales.actualizar(profesionalId, { fechas_libres: nuevasFechas });
                 if (onActualizar) onActualizar(); 
             }
         } catch (error) {
@@ -347,10 +338,10 @@ function FechasLibresPanel({ LashistaId, Lashistaes, onActualizar }) {
     return (
         <div className="mt-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
             <h3 className="font-semibold text-lg text-orange-800 mb-2 flex items-center gap-2">
-                ✈️ Días Libres / Vacaciones de {Lashista?.nombre}
+                ✈️ Días Libres / Vacaciones de {profesional?.nombre}
             </h3>
             <p className="text-sm text-orange-600 mb-4">
-                El Lashista NO recibirá turnos estos días.
+                El profesional NO recibirá turnos estos días.
             </p>
 
             <div className="flex flex-wrap sm:flex-nowrap gap-2 mb-4">
@@ -394,9 +385,6 @@ function FechasLibresPanel({ LashistaId, Lashistaes, onActualizar }) {
     );
 }
 
-// ==========================================
-// COMPONENTE: DÍAS CERRADOS DEL LOCAL - SIN DEPENDENCIA EXTERNA
-// ==========================================
 function DiasCerradosGlobalesPanel() {
     const [dias, setDias] = React.useState([]);
     const [fecha, setFecha] = React.useState('');
@@ -432,7 +420,6 @@ function DiasCerradosGlobalesPanel() {
             
             if (response.ok) {
                 const data = await response.json();
-                // Filtrar solo los que son iguales o posteriores a hoy
                 const hoy = new Date().toISOString().split('T')[0];
                 const diasFuturos = (data || []).filter(d => d.fecha >= hoy);
                 setDias(diasFuturos);
@@ -447,7 +434,6 @@ function DiasCerradosGlobalesPanel() {
     React.useEffect(() => {
         cargarDias();
         
-        // Escuchar cambios en días cerrados
         const handleActualizacion = () => cargarDias();
         window.addEventListener('diasCerradosActualizados', handleActualizacion);
         
@@ -491,7 +477,6 @@ function DiasCerradosGlobalesPanel() {
                 setFecha('');
                 setMotivo('');
                 cargarDias();
-                // Disparar evento para actualizar otros componentes
                 if (window.dispatchEvent) {
                     window.dispatchEvent(new Event('diasCerradosActualizados'));
                 }
@@ -537,7 +522,7 @@ function DiasCerradosGlobalesPanel() {
                 🚫 Días Cerrados del Local
             </h3>
             <p className="text-sm text-red-600 mb-4">
-                El local completo estará cerrado estos días. <b>Ningún Lashista</b> recibirá turnos.
+                El local completo estará cerrado estos días. <b>Ningún profesional</b> recibirá turnos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-2 mb-4 bg-white p-3 rounded shadow-sm border border-red-100">
@@ -595,3 +580,5 @@ function DiasCerradosGlobalesPanel() {
         </div>
     );
 }
+
+window.ConfigPanel = ConfigPanel;

@@ -404,14 +404,16 @@ function ClientAuthScreen({ onAccessGranted, onGoBack }) {
 
                             {esProfesional && profesionalInfo && !verificando && (
                                 <button
-                                    type="button"
-                                    onClick={() => {
-                                        localStorage.setItem('profesionalAuth', JSON.stringify({
+                            type="button"
+                            onClick={() => {
+                                        const profesionalSession = JSON.stringify({
                                             id: profesionalInfo.id,
                                             nombre: profesionalInfo.nombre,
                                             telefono: profesionalInfo.telefono,
                                             nivel: profesionalInfo.nivel || 1
-                                        }));
+                                        });
+                                        localStorage.setItem('profesionalAuth', profesionalSession);
+                                        localStorage.setItem('LashistaAuth', profesionalSession);
                                         window.location.href = 'admin.html';
                                     }}
                                     className="w-full bg-white text-purple-600 py-4 rounded-xl font-bold hover:bg-purple-50 transition transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg text-lg border-2 border-purple-300"

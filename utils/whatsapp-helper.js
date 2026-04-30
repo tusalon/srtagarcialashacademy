@@ -35,6 +35,30 @@ window.esIOS = function() {
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 };
 
+// Normaliza números de Cuba para WhatsApp.
+// Ej: 53066647 (local) -> 5353066647, 5353066647 -> 5353066647.
+window.normalizarTelefonoWhatsApp = function(telefono) {
+    let numero = (telefono || '').toString().replace(/\D/g, '');
+
+    if (numero.startsWith('00')) {
+        numero = numero.slice(2);
+    }
+
+    if (numero.length === 8) {
+        return `53${numero}`;
+    }
+
+    if (numero.length === 10 && numero.startsWith('53')) {
+        return numero;
+    }
+
+    if (numero.length === 9 && numero.startsWith('5')) {
+        return `53${numero}`;
+    }
+
+    return numero;
+};
+
 // ============================================
 // FUNCIÓN UNIVERSAL WHATSAPP (CORREGIDA - USA api.whatsapp.com Y location.href)
 // ============================================
@@ -42,11 +66,7 @@ window.enviarWhatsApp = function(telefono, mensaje) {
     try {
         console.log('📤 enviarWhatsApp llamado a:', telefono);
         
-        const telefonoLimpio = telefono.toString().replace(/\D/g, '');
-        let numeroCompleto = telefonoLimpio;
-        if (!numeroCompleto.startsWith('53')) {
-            numeroCompleto = `53${telefonoLimpio}`;
-        }
+        const numeroCompleto = window.normalizarTelefonoWhatsApp(telefono);
         
         const mensajeCodificado = encodeURIComponent(mensaje);
         

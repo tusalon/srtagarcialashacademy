@@ -132,8 +132,15 @@ async function createBooking(bookingData) {
         
         const dataWithNegocio = {
             ...bookingData,
+            profesional_id: bookingData.profesional_id || bookingData.Lashista_id || bookingData.trabajador_id,
+            profesional_nombre: bookingData.profesional_nombre || bookingData.Lashista_nombre || bookingData.trabajador_nombre,
             negocio_id: negocioId
         };
+
+        delete dataWithNegocio.Lashista_id;
+        delete dataWithNegocio.Lashista_nombre;
+        delete dataWithNegocio.trabajador_id;
+        delete dataWithNegocio.trabajador_nombre;
         
         console.log('📤 Creando reserva para negocio:', negocioId, dataWithNegocio);
         
@@ -191,7 +198,7 @@ async function marcarTurnosCompletados() {
         console.log('🕐 Hora LOCAL actual:', `${horaActual}:${minutosActuales}`);
         
         const responsePasados = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=lt.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
+            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=lt.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,profesional_nombre`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -209,7 +216,7 @@ async function marcarTurnosCompletados() {
         const turnosPasados = await responsePasados.json();
         
         const responseHoy = await fetch(
-            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=eq.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,Lashista_nombre`,
+            `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&estado=eq.Reservado&fecha=eq.${hoy}&select=id,fecha,hora_inicio,hora_fin,cliente_nombre,servicio,profesional_nombre`,
             {
                 headers: {
                     'apikey': window.SUPABASE_ANON_KEY,
@@ -535,7 +542,7 @@ function AdminApp() {
                 
                 // Obtener reservas existentes
                 const response = await fetch(
-                    `${window.SUPABASE_URL}/rest/v1/reservas?fecha=eq.${nuevaReservaData.fecha}&Lashista_id=eq.${nuevaReservaData.Lashista_id}&estado=neq.Cancelado&select=hora_inicio,hora_fin`,
+                    `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${getNegocioId()}&fecha=eq.${nuevaReservaData.fecha}&profesional_id=eq.${nuevaReservaData.Lashista_id}&estado=neq.Cancelado&select=hora_inicio,hora_fin`,
                     {
                         headers: {
                             'apikey': window.SUPABASE_ANON_KEY,
@@ -618,7 +625,7 @@ function AdminApp() {
             const fechaFin = ultimoDia.toISOString().split('T')[0];
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&Lashista_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
+                `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${getNegocioId()}&fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&profesional_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -704,7 +711,7 @@ function AdminApp() {
             const fechaFin = ultimoDia.toISOString().split('T')[0];
             
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/reservas?fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&Lashista_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
+                `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${getNegocioId()}&fecha=gte.${fechaInicio}&fecha=lte.${fechaFin}&profesional_id=eq.${LashistaId}&estado=neq.Cancelado&select=fecha,hora_inicio,hora_fin`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -926,8 +933,8 @@ function AdminApp() {
                 cliente_whatsapp: `53${nuevaReservaData.cliente_whatsapp.replace(/\D/g, '')}`,
                 servicio: nuevaReservaData.servicio,
                 duracion: servicio.duracion,
-                Lashista_id: nuevaReservaData.Lashista_id,
-                Lashista_nombre: Lashista.nombre,
+                profesional_id: nuevaReservaData.Lashista_id,
+                profesional_nombre: Lashista.nombre,
                 fecha: nuevaReservaData.fecha,
                 hora_inicio: nuevaReservaData.hora_inicio,
                 hora_fin: endTime,
@@ -1152,7 +1159,7 @@ Hola *${bookingData.cliente_nombre}*, ¡tu turno ha sido CONFIRMADO!
 📅 *Fecha:* ${fechaConDia}
 ⏰ *Hora:* ${horaFormateada}
 💫 *Servicio:* ${bookingData.servicio}
-👁️ *Lashista:* ${bookingData.Lashista_nombre || bookingData.trabajador_nombre}
+👁️ *Lashista:* ${bookingData.Lashista_nombre || bookingData.profesional_nombre || bookingData.trabajador_nombre}
 
 ✅ *Pago recibido correctamente*
 
@@ -1688,7 +1695,7 @@ Cualquier cambio, podés cancelarlo desde la app con hasta 1 hora de anticipaci�
                                                 <p><span className="font-medium">👤 Cliente:</span> {b.cliente_nombre}</p>
                                                 <p><span className="font-medium">📱 WhatsApp:</span> {b.cliente_whatsapp}</p>
                                                 <p><span className="font-medium">💫 Servicio:</span> {b.servicio}</p>
-                                                <p><span className="font-medium">👁️ Lashista:</span> {b.Lashista_nombre || b.trabajador_nombre}</p>
+                                                <p><span className="font-medium">👁️ Lashista:</span> {b.Lashista_nombre || b.profesional_nombre || b.trabajador_nombre}</p>
                                             </div>
                                             <div className="flex justify-between items-center mt-3 pt-2 border-t">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${b.estado === 'Reservado' ? 'bg-purple-200 text-pink-700' : b.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' : b.estado === 'Completado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

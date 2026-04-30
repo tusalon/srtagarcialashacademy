@@ -1,6 +1,6 @@
 ﻿// sw.js - Service Worker para Srta.García Lash Academy
 
-const CACHE_NAME = 'srtagarcialashacademy-v1';
+const CACHE_NAME = 'srtagarcialashacademy-v2';
 const urlsToCache = [
   '/srtagarcialashacademy/',
   '/srtagarcialashacademy/index.html',

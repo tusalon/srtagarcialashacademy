@@ -57,41 +57,23 @@ async function getBookingsByDateAndprofesional(dateStr, profesionalId) {
         const negocioId = getNegocioId();
         console.log(`🌐 Solicitando turnos para ${dateStr} del profesional ${profesionalId} (negocio: ${negocioId})`);
 
-        const columnasProfesional = ['Lashista_id', 'profesional_id', 'trabajador_id'];
-        const reservasPorId = new Map();
-        let consultaValida = false;
-
-        for (const columna of columnasProfesional) {
-            const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}?negocio_id=eq.${negocioId}&fecha=eq.${dateStr}&${columna}=eq.${profesionalId}&estado=neq.Cancelado&select=*`,
-                {
-                    headers: {
-                        'apikey': window.SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    cache: 'no-store'
-                }
-            );
-
-            if (response.ok) {
-                consultaValida = true;
-                const data = await response.json();
-                (Array.isArray(data) ? data : []).forEach(booking => {
-                    reservasPorId.set(booking.id || `${booking.fecha}-${booking.hora_inicio}-${booking.cliente_whatsapp}`, booking);
-                });
-                continue;
+        const response = await fetch(
+            `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}?negocio_id=eq.${negocioId}&fecha=eq.${dateStr}&profesional_id=eq.${profesionalId}&estado=neq.Cancelado&select=*`,
+            {
+                headers: {
+                    'apikey': window.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                cache: 'no-store'
             }
+        );
 
-            console.warn(`⚠️ No se pudo consultar reservas por ${columna}, probando alias...`);
-        }
+        if (!response.ok) throw new Error('Error fetching bookings');
 
-        if (consultaValida) {
-            return Array.from(reservasPorId.values());
-        }
-
-        throw new Error('Error fetching bookings');
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error('Error fetching bookings:', error);
         return [];
@@ -108,63 +90,48 @@ async function createBooking(bookingData) {
         const profesionalId = bookingData.Lashista_id || bookingData.profesional_id || bookingData.trabajador_id;
         const profesionalNombre = bookingData.Lashista_nombre || bookingData.profesional_nombre || bookingData.trabajador_nombre;
 
-        const baseData = {
+        const dataForSupabase = {
             negocio_id: negocioId,
             cliente_nombre: bookingData.cliente_nombre,
             cliente_whatsapp: bookingData.cliente_whatsapp,
             servicio: bookingData.servicio,
             duracion: bookingData.duracion,
+            profesional_id: profesionalId,
+            profesional_nombre: profesionalNombre,
             fecha: bookingData.fecha,
             hora_inicio: bookingData.hora_inicio,
             hora_fin: bookingData.hora_fin,
             estado: bookingData.estado || 'Reservado'
         };
 
-        const variantesProfesional = [
-            { Lashista_id: profesionalId, Lashista_nombre: profesionalNombre },
-            { profesional_id: profesionalId, profesional_nombre: profesionalNombre },
-            { trabajador_id: profesionalId, trabajador_nombre: profesionalNombre }
-        ];
+        console.log('📤 Enviando a Supabase:', dataForSupabase);
 
-        let ultimoError = '';
-
-        for (const variante of variantesProfesional) {
-            const dataForSupabase = {
-                ...baseData,
-                ...variante
-            };
-
-            console.log('📤 Enviando a Supabase:', dataForSupabase);
-
-            const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'apikey': window.SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation',
-                        'Cache-Control': 'no-cache'
-                    },
-                    cache: 'no-store',
-                    body: JSON.stringify(dataForSupabase)
-                }
-            );
-
-            if (response.ok) {
-                const newBooking = await response.json();
-                console.log('✅ Reserva creada exitosamente:', newBooking);
-
-                return { success: true, data: newBooking[0] };
+        const response = await fetch(
+            `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}`,
+            {
+                method: 'POST',
+                headers: {
+                    'apikey': window.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation',
+                    'Cache-Control': 'no-cache'
+                },
+                cache: 'no-store',
+                body: JSON.stringify(dataForSupabase)
             }
+        );
 
-            ultimoError = await response.text();
-            console.warn('⚠️ Error creando reserva con alias de profesional, probando otro:', ultimoError);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error response:', errorText);
+            throw new Error('Error creating booking');
         }
 
-        console.error('❌ Error response:', ultimoError);
-        throw new Error('Error creating booking');
+        const newBooking = await response.json();
+        console.log('✅ Reserva creada exitosamente:', newBooking);
+
+        return { success: true, data: newBooking[0] };
     } catch (error) {
         console.error('❌ Error creating booking:', error);
         throw error;

@@ -21,7 +21,7 @@ window.loginLashista = async function(telefono, password) {
         const negocioId = getNegocioId();
         console.log('🔐 Intentando login de Lashista:', telefono, 'negocio:', negocioId);
 
-        const tablas = ['profesionales', 'Lashistaes'];
+        const tablas = ['profesionales'];
         for (const tabla of tablas) {
             const response = await fetch(
                 `${window.SUPABASE_URL}/rest/v1/${tabla}?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&password=eq.${password}&activo=eq.true&select=*`,
@@ -59,7 +59,7 @@ window.verificarLashistaPorTelefono = async function(telefono) {
         const negocioId = getNegocioId();
         console.log('🔍 Verificando si es Lashista (solo teléfono):', telefono, 'negocio:', negocioId);
 
-        const tablas = ['profesionales', 'Lashistaes'];
+        const tablas = ['profesionales'];
         for (const tabla of tablas) {
             const response = await fetch(
                 `${window.SUPABASE_URL}/rest/v1/${tabla}?negocio_id=eq.${negocioId}&telefono=eq.${telefono}&activo=eq.true&select=id,nombre,telefono,nivel`,
@@ -156,7 +156,7 @@ window.getReservasPorLashista = async function(LashistaId, soloActivas = true) {
         const negocioId = getNegocioId();
         console.log(`📋 Obteniendo reservas para Lashista ${LashistaId} (negocio: ${negocioId})`);
         
-        let url = `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&order=fecha.desc,hora_inicio.asc`;
+        let url = `${window.SUPABASE_URL}/rest/v1/reservas?negocio_id=eq.${negocioId}&profesional_id=eq.${LashistaId}&order=fecha.desc,hora_inicio.asc`;
         
         if (soloActivas) {
             url += '&estado=neq.Cancelado';

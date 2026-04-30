@@ -102,7 +102,7 @@ async function cargarHorariosprofesionales() {
         
         const horarios = {};
         (data || []).forEach(item => {
-            horarios[item.Lashista_id] = {
+            horarios[item.profesional_id] = {
                 horariosPorDia: item.horarios_por_dia || {},
                 horas: item.horas || [],
                 dias: item.dias || []
@@ -209,11 +209,11 @@ window.salonConfig = {
         }
     },
     
-    getHorariosPorDia: async function(LashistaId) {
+    getHorariosPorDia: async function(profesionalId) {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -232,13 +232,13 @@ window.salonConfig = {
         }
     },
     
-    guardarHorariosPorDia: async function(LashistaId, horariosPorDia) {
+    guardarHorariosPorDia: async function(profesionalId, horariosPorDia) {
         try {
             const negocioId = getNegocioId();
-            console.log(`💾 Guardando horarios por día para Lashista ${LashistaId} (negocio: ${negocioId}):`, horariosPorDia);
+            console.log(`💾 Guardando horarios por día para profesional ${profesionalId} (negocio: ${negocioId}):`, horariosPorDia);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id,horas,dias`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=id,horas,dias`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -277,7 +277,7 @@ window.salonConfig = {
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
-                    Lashista_id: LashistaId,
+                    profesional_id: profesionalId,
                     horarios_por_dia: horariosPorDia,
                     horas: horasArray,
                     dias: diasQueTrabajan
@@ -305,7 +305,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosprofesionales[LashistaId] = {
+            horariosprofesionales[profesionalId] = {
                 horariosPorDia: horariosPorDia,
                 horas: horasArray,
                 dias: diasQueTrabajan
@@ -325,11 +325,11 @@ window.salonConfig = {
         }
     },
     
-    getHorariosLashista: async function(LashistaId) {
+    getHorariosLashista: async function(profesionalId) {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=*`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=*`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -354,17 +354,17 @@ window.salonConfig = {
         }
     },
     
-    guardarHorariosLashista: async function(LashistaId, horarios) {
+    guardarHorariosLashista: async function(profesionalId, horarios) {
         if (horarios.horariosPorDia) {
-            return this.guardarHorariosPorDia(LashistaId, horarios.horariosPorDia);
+            return this.guardarHorariosPorDia(profesionalId, horarios.horariosPorDia);
         }
         
         try {
             const negocioId = getNegocioId();
-            console.log(`💾 Guardando horarios para Lashista ${LashistaId} (negocio: ${negocioId}):`, horarios);
+            console.log(`💾 Guardando horarios para profesional ${profesionalId} (negocio: ${negocioId}):`, horarios);
             
             const checkResponse = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&Lashista_id=eq.${LashistaId}&select=id`,
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=id`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -394,7 +394,7 @@ window.salonConfig = {
                 method = 'POST';
                 body = JSON.stringify({
                     negocio_id: negocioId,
-                    Lashista_id: LashistaId,
+                    profesional_id: profesionalId,
                     horas: horarios.horas || [],
                     dias: horarios.dias || []
                 });
@@ -421,7 +421,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosprofesionales[LashistaId] = {
+            horariosprofesionales[profesionalId] = {
                 horas: horarios.horas || [],
                 dias: horarios.dias || []
             };

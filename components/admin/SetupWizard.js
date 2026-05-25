@@ -1,4 +1,4 @@
-﻿// components/admin/SetupWizard.js
+// components/admin/SetupWizard.js
 
 function SetupWizard() {
     const [step, setStep] = React.useState(1);
@@ -19,6 +19,7 @@ function SetupWizard() {
         color_secundario: '#f59e0b',
         logo: null,
         logo_preview: '',
+        imagen_fondo_tipo: 'unas',
         
         // Paso 3: Mensajes
         mensaje_bienvenida: '¡Bienvenido a nuestro salón!',
@@ -46,7 +47,7 @@ function SetupWizard() {
     const cargarDatosNegocio = async (id) => {
         try {
             const response = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/negocios?id=eq.${id}&select=nombre,telefono,email`,
+                `${window.SUPABASE_URL}/rest/v1/negocios?id=eq.${id}&select=nombre,telefono,email,imagen_fondo_tipo`,
                 {
                     headers: {
                         'apikey': window.SUPABASE_ANON_KEY,
@@ -62,7 +63,8 @@ function SetupWizard() {
                         ...prev,
                         nombre: data[0].nombre || '',
                         telefono_whatsapp: data[0].telefono || '',
-                        email: data[0].email || ''
+                        email: data[0].email || '',
+                        imagen_fondo_tipo: data[0].imagen_fondo_tipo || 'unas'
                     }));
                 }
             }
@@ -173,6 +175,7 @@ function SetupWizard() {
                 direccion: config.direccion || null,
                 color_primario: config.color_primario,
                 color_secundario: config.color_secundario,
+                imagen_fondo_tipo: config.imagen_fondo_tipo || 'unas',
                 mensaje_bienvenida: config.mensaje_bienvenida,
                 mensaje_confirmacion: config.mensaje_confirmacion,
                 instagram: config.instagram || null,
@@ -226,7 +229,7 @@ function SetupWizard() {
     if (cargando) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
             </div>
         );
     }
@@ -259,7 +262,7 @@ function SetupWizard() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <div className="w-16 h-16 bg-purple-700 rounded-2xl flex items-center justify-center">
+                        <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center">
                             <i className="icon-settings text-3xl text-white"></i>
                         </div>
                     </div>
@@ -277,7 +280,7 @@ function SetupWizard() {
                         <div key={s} className="flex-1 text-center">
                             <div className={`
                                 w-10 h-10 rounded-full mx-auto flex items-center justify-center font-bold transition-all
-                                ${s === step ? 'bg-purple-700 text-white shadow-md scale-110' : 
+                                ${s === step ? 'bg-amber-600 text-white shadow-md scale-110' : 
                                   s < step ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}
                             `}>
                                 {s < step ? '✓' : s}
@@ -306,7 +309,7 @@ function SetupWizard() {
                 {step === 1 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-building text-purple-600"></i>
+                            <i className="icon-building text-amber-500"></i>
                             Datos del negocio
                         </h2>
                         
@@ -318,7 +321,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.nombre}
                                 onChange={(e) => setConfig({...config, nombre: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 placeholder="Ej: BennetSalón"
                                 autoFocus
                             />
@@ -336,7 +339,7 @@ function SetupWizard() {
                                     type="tel"
                                     value={config.telefono_whatsapp}
                                     onChange={(e) => setConfig({...config, telefono_whatsapp: e.target.value.replace(/\D/g, '')})}
-                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     placeholder="54438629"
                                     maxLength="8"
                                 />
@@ -352,7 +355,7 @@ function SetupWizard() {
                                 type="email"
                                 value={config.email}
                                 onChange={(e) => setConfig({...config, email: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 placeholder="gisellebenettlc@gmail.com"
                             />
                         </div>
@@ -365,7 +368,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.direccion}
                                 onChange={(e) => setConfig({...config, direccion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 placeholder="Calle Principal 123"
                             />
                         </div>
@@ -383,7 +386,7 @@ function SetupWizard() {
                 {step === 2 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-palette text-purple-600"></i>
+                            <i className="icon-palette text-amber-500"></i>
                             Personalización
                         </h2>
                         
@@ -437,7 +440,7 @@ function SetupWizard() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Logo del negocio
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-600 transition cursor-pointer"
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-amber-500 transition cursor-pointer"
                                  onClick={() => document.getElementById('logo-input').click()}>
                                 <input
                                     id="logo-input"
@@ -469,9 +472,34 @@ function SetupWizard() {
                                 type="text"
                                 value={config.horario_atencion}
                                 onChange={(e) => setConfig({...config, horario_atencion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 placeholder="Lun-Vie 9:00-20:00, Sáb 9:00-18:00"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Imagen de fondo para clientes
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {(window.HERO_BACKGROUND_OPTIONS || []).map((opcion) => (
+                                    <button
+                                        type="button"
+                                        key={opcion.id}
+                                        onClick={() => setConfig({...config, imagen_fondo_tipo: opcion.id})}
+                                        className={`overflow-hidden rounded-lg border-2 bg-white text-left transition ${
+                                            config.imagen_fondo_tipo === opcion.id
+                                                ? 'border-amber-600 ring-2 ring-amber-200'
+                                                : 'border-gray-200 hover:border-amber-300'
+                                        }`}
+                                    >
+                                        <img src={opcion.image} alt={opcion.label} className="h-24 w-full object-cover" />
+                                        <div className="p-3">
+                                            <p className="text-sm font-semibold text-gray-900">{opcion.label}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{opcion.description}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -480,7 +508,7 @@ function SetupWizard() {
                 {step === 3 && (
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 animate-fade-in">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <i className="icon-message-square text-purple-600"></i>
+                            <i className="icon-message-square text-amber-500"></i>
                             Mensajes
                         </h2>
                         
@@ -491,7 +519,7 @@ function SetupWizard() {
                             <textarea
                                 value={config.mensaje_bienvenida}
                                 onChange={(e) => setConfig({...config, mensaje_bienvenida: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 rows="3"
                                 placeholder="¡Bienvenido a nuestro salón!"
                             />
@@ -505,7 +533,7 @@ function SetupWizard() {
                             <textarea
                                 value={config.mensaje_confirmacion}
                                 onChange={(e) => setConfig({...config, mensaje_confirmacion: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 rows="3"
                                 placeholder="Tu turno ha sido reservado con éxito"
                             />
@@ -523,7 +551,7 @@ function SetupWizard() {
                                     type="text"
                                     value={config.instagram}
                                     onChange={(e) => setConfig({...config, instagram: e.target.value})}
-                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                    className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     placeholder="bennetsalon"
                                 />
                             </div>
@@ -537,7 +565,7 @@ function SetupWizard() {
                                 type="text"
                                 value={config.facebook}
                                 onChange={(e) => setConfig({...config, facebook: e.target.value})}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 placeholder="/bennetsalon"
                             />
                         </div>
@@ -624,7 +652,7 @@ function SetupWizard() {
                     {step < 4 ? (
                         <button
                             onClick={handleNext}
-                            className="px-6 py-2 bg-purple-700 text-white rounded-lg hover:bg-amber-700 transition flex items-center gap-2"
+                            className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition flex items-center gap-2"
                             disabled={guardando}
                         >
                             Continuar

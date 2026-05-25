@@ -1,4 +1,4 @@
-﻿// admin-app.js - LAG.barberia (VERSIÓN COMPLETA CORREGIDA)
+// admin-app.js - LAG.barberia (VERSIÓN COMPLETA CORREGIDA)
 
 // ============================================
 // FUNCIONES DE SUPABASE
@@ -184,22 +184,22 @@ const enviarCancelacionWhatsApp = (bookingData) => {
             window.formatFechaCompleta(bookingData.fecha) : 
             bookingData.fecha;
         
-        const mensaje = 
-`❌ *CANCELACIÓN DE TURNO - LAG.barberia*
+        const mensaje =
+`*CANCELACION DE TURNO - LAG.barberia*
 
 Hola *${bookingData.cliente_nombre}*, lamentamos informarte que tu turno ha sido cancelado.
 
-📅 *Fecha:* ${fechaConDia}
-⏰ *Hora:* ${formatTo12Hour(bookingData.hora_inicio)}
-💈 *Servicio:* ${bookingData.servicio}
-👨‍🎨 *Barbero:* ${bookingData.barbero_nombre || bookingData.trabajador_nombre || 'No asignado'}
+*Fecha:* ${fechaConDia}
+*Hora:* ${formatTo12Hour(bookingData.hora_inicio)}
+*Servicio:* ${bookingData.servicio}
+*Barbero:* ${bookingData.barbero_nombre || bookingData.trabajador_nombre || 'No asignado'}
 
-🔔 *Motivo:* Cancelación por administración
+*Motivo:* Cancelacion por administracion
 
-📱 *¿Querés reprogramar?*
-Podés hacerlo desde la app
+*Queres reprogramar?*
+Podes hacerlo desde la app
 
-Disculpá las molestias. Esperamos verte pronto en LAG.barberia ✂️
+Disculpa las molestias. Esperamos verte pronto en LAG.barberia.
 
 LAG.barberia - Nivel que se nota`;
 
@@ -663,7 +663,7 @@ function AdminApp() {
                 await loadClientesAutorizados();
                 alert(`✅ Cliente ${cliente.nombre} aprobado`);
                 
-                const mensaje = `✅ ¡Hola ${cliente.nombre}! Tu acceso a LAG.barberia ha sido APROBADO. Ya podés reservar turnos desde la app.`;
+                const mensaje = `Hola ${cliente.nombre}! Tu acceso a LAG.barberia ha sido APROBADO. Ya podes reservar turnos desde la app.`;
                 const telefono = cliente.whatsapp.replace(/\D/g, '');
                 const encodedText = encodeURIComponent(mensaje);
                 window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodedText}`, '_blank');
@@ -1064,11 +1064,11 @@ function AdminApp() {
                                                         let className = "h-10 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-all relative";
                                                         
                                                         if (selected) {
-                                                            className += " bg-purple-700 text-white shadow-md ring-2 ring-amber-300";
+                                                            className += " bg-amber-600 text-white shadow-md ring-2 ring-amber-300";
                                                         } else if (!available) {
                                                             className += " text-gray-300 cursor-not-allowed bg-gray-50";
                                                         } else {
-                                                            className += " text-gray-700 hover:bg-amber-50 hover:text-purple-700 hover:scale-105 cursor-pointer";
+                                                            className += " text-gray-700 hover:bg-amber-50 hover:text-amber-600 hover:scale-105 cursor-pointer";
                                                         }
                                                         
                                                         return (
@@ -1103,7 +1103,7 @@ function AdminApp() {
                                                         onClick={() => setNuevaReservaData({...nuevaReservaData, hora_inicio: hora})}
                                                         className={`py-2 px-3 rounded-lg text-sm font-medium transition ${
                                                             nuevaReservaData.hora_inicio === hora
-                                                                ? 'bg-purple-700 text-white'
+                                                                ? 'bg-amber-600 text-white'
                                                                 : 'bg-gray-100 hover:bg-gray-200'
                                                         }`}
                                                     >
@@ -1147,7 +1147,7 @@ function AdminApp() {
                             onClick={() => setTabActivo(tab.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                                 tabActivo === tab.id 
-                                    ? 'bg-purple-700 text-white shadow-md scale-105' 
+                                    ? 'bg-amber-600 text-white shadow-md scale-105' 
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
@@ -1371,7 +1371,7 @@ function AdminApp() {
 
                         {loading ? (
                             <div className="text-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
                                 <p className="text-gray-500 mt-4">Cargando reservas...</p>
                             </div>
                         ) : (
@@ -1388,7 +1388,7 @@ function AdminApp() {
                                 ) : (
                                     filteredBookings.map(b => (
                                         <div key={b.id} className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${
-                                            b.estado === 'Reservado' ? 'border-l-purple-600' :
+                                            b.estado === 'Reservado' ? 'border-l-amber-500' :
                                             b.estado === 'Completado' ? 'border-l-green-500' :
                                             'border-l-red-500'
                                         }`}>

@@ -1,4 +1,4 @@
-﻿// utils/api.js - Versión genérica para profesionales (CORREGIDO)
+// utils/api.js - Versión genérica para profesionales (CORREGIDO)
 
 console.log('📡 api.js cargado');
 
@@ -52,11 +52,11 @@ async function getBookingsByDate(dateStr) {
 /**
  * Fetch bookings for a specific date AND profesional
  */
-async function getBookingsByDateAndprofesional(dateStr, profesionalId) {
+async function getBookingsByDateAndProfesional(dateStr, profesionalId) {
     try {
         const negocioId = getNegocioId();
         console.log(`🌐 Solicitando turnos para ${dateStr} del profesional ${profesionalId} (negocio: ${negocioId})`);
-
+        
         const response = await fetch(
             `${window.SUPABASE_URL}/rest/v1/${TABLE_NAME}?negocio_id=eq.${negocioId}&fecha=eq.${dateStr}&profesional_id=eq.${profesionalId}&estado=neq.Cancelado&select=*`,
             {
@@ -69,9 +69,9 @@ async function getBookingsByDateAndprofesional(dateStr, profesionalId) {
                 cache: 'no-store'
             }
         );
-
+        
         if (!response.ok) throw new Error('Error fetching bookings');
-
+        
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -86,18 +86,21 @@ async function getBookingsByDateAndprofesional(dateStr, profesionalId) {
 async function createBooking(bookingData) {
     try {
         const negocioId = getNegocioId();
-
-        const profesionalId = bookingData.Lashista_id || bookingData.profesional_id || bookingData.trabajador_id;
-        const profesionalNombre = bookingData.Lashista_nombre || bookingData.profesional_nombre || bookingData.trabajador_nombre;
-
+        const bloqueo = await window.getClienteBloqueado?.(bookingData.cliente_whatsapp);
+        if (bloqueo) {
+            const error = new Error('Este cliente no tiene permiso para reservar.');
+            error.code = 'CLIENTE_BLOQUEADO';
+            throw error;
+        }
+        
         const dataForSupabase = {
             negocio_id: negocioId,
             cliente_nombre: bookingData.cliente_nombre,
             cliente_whatsapp: bookingData.cliente_whatsapp,
             servicio: bookingData.servicio,
             duracion: bookingData.duracion,
-            profesional_id: profesionalId,
-            profesional_nombre: profesionalNombre,
+            profesional_id: bookingData.trabajador_id || bookingData.profesional_id,
+            profesional_nombre: bookingData.trabajador_nombre || bookingData.profesional_nombre,
             fecha: bookingData.fecha,
             hora_inicio: bookingData.hora_inicio,
             hora_fin: bookingData.hora_fin,
@@ -121,16 +124,16 @@ async function createBooking(bookingData) {
                 body: JSON.stringify(dataForSupabase)
             }
         );
-
+        
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Error response:', errorText);
             throw new Error('Error creating booking');
         }
-
+        
         const newBooking = await response.json();
         console.log('✅ Reserva creada exitosamente:', newBooking);
-
+        
         return { success: true, data: newBooking[0] };
     } catch (error) {
         console.error('❌ Error creating booking:', error);
@@ -204,11 +207,8 @@ async function updateBookingStatus(id, newStatus) {
 
 // Hacer funciones globales
 window.getBookingsByDate = getBookingsByDate;
-window.getBookingsByDateAndprofesional = getBookingsByDateAndprofesional;
-window.getBookingsByDateAndWorker = getBookingsByDateAndprofesional;
-window.getBookingsByDateAndProfesional = getBookingsByDateAndprofesional;
-window.getBookingsByDateAndLashista = getBookingsByDateAndprofesional;
-window.getBookingsByDateAndlashista = getBookingsByDateAndprofesional;
+window.getBookingsByDateAndProfesional = getBookingsByDateAndProfesional;
+window.getBookingsByDateAndWorker = getBookingsByDateAndProfesional;
 window.createBooking = createBooking;
 window.getAllBookings = getAllBookings;
 window.updateBookingStatus = updateBookingStatus;

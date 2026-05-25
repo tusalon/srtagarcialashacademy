@@ -1,4 +1,4 @@
-﻿// components/admin/ProfesionalesPanel.js
+// components/admin/ProfesionalesPanel.js
 
 function ProfesionalesPanel() {
     const [profesionales, setProfesionales] = React.useState([]);
@@ -14,12 +14,10 @@ function ProfesionalesPanel() {
         setCargando(true);
         try {
             console.log('📋 Cargando profesionales...');
-            if (window.salonprofesionales) {
-                const lista = await window.salonprofesionales.getAll(false);
+            if (window.salonProfesionales) {
+                const lista = await window.salonProfesionales.getAll(false);
                 console.log('✅ Profesionales obtenidos:', lista);
                 setProfesionales(lista || []);
-            } else {
-                console.error('❌ window.salonprofesionales no está definido');
             }
         } catch (error) {
             console.error('Error cargando profesionales:', error);
@@ -32,9 +30,9 @@ function ProfesionalesPanel() {
         try {
             console.log('💾 Guardando profesional:', profesional);
             if (editando) {
-                await window.salonprofesionales.actualizar(editando.id, profesional);
+                await window.salonProfesionales.actualizar(editando.id, profesional);
             } else {
-                await window.salonprofesionales.crear(profesional);
+                await window.salonProfesionales.crear(profesional);
             }
             await cargarProfesionales();
             setMostrarForm(false);
@@ -49,7 +47,7 @@ function ProfesionalesPanel() {
         if (!confirm('¿Eliminar este profesional?')) return;
         try {
             console.log('🗑️ Eliminando profesional:', id);
-            await window.salonprofesionales.eliminar(id);
+            await window.salonProfesionales.eliminar(id);
             await cargarProfesionales();
         } catch (error) {
             console.error('Error eliminando profesional:', error);
@@ -60,7 +58,7 @@ function ProfesionalesPanel() {
     const toggleActivo = async (id) => {
         const profesional = profesionales.find(p => p.id === id);
         try {
-            await window.salonprofesionales.actualizar(id, { activo: !profesional.activo });
+            await window.salonProfesionales.actualizar(id, { activo: !profesional.activo });
             await cargarProfesionales();
         } catch (error) {
             console.error('Error cambiando estado:', error);
@@ -80,7 +78,7 @@ function ProfesionalesPanel() {
         return (
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
                     <p className="text-gray-500 mt-4">Cargando profesionales...</p>
                 </div>
             </div>
@@ -96,7 +94,7 @@ function ProfesionalesPanel() {
                         setEditando(null);
                         setMostrarForm(true);
                     }}
-                    className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800"
+                    className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
                 >
                     + Nuevo Profesional
                 </button>
@@ -123,7 +121,7 @@ function ProfesionalesPanel() {
                         <div key={p.id} className={`border rounded-lg p-4 ${p.activo ? '' : 'opacity-50 bg-gray-50'}`}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-12 h-12 ${p.color || 'bg-purple-700'} rounded-full flex items-center justify-center text-2xl`}>
+                                    <div className={`w-12 h-12 ${p.color || 'bg-amber-600'} rounded-full flex items-center justify-center text-2xl`}>
                                         {p.avatar || '👤'}
                                     </div>
                                     <div>
@@ -186,33 +184,48 @@ function ProfesionalesPanel() {
 }
 
 function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
-    const [form, setForm] = React.useState(profesional || {
+    const [form, setForm] = React.useState(profesional ? { ...profesional, password: '' } : {
         nombre: '',
         especialidad: '',
         telefono: '',
         password: '',
         nivel: 1,
-        color: 'bg-purple-700',
+        color: 'bg-amber-600',
         avatar: '👤'
     });
 
-    const avatares = ['👤', '💇', '💫', '👑', '⭐', '🔰'];
+    const avatares = ['👤', '💇', '💅', '👑', '⭐', '🔰'];
     const colores = [
-        { value: 'bg-purple-700', label: 'Púrpura' },
+        { value: 'bg-amber-600', label: 'Ámbar' },
+        { value: 'bg-amber-700', label: 'Ámbar Oscuro' },
         { value: 'bg-pink-500', label: 'Rosa' },
+        { value: 'bg-purple-500', label: 'Púrpura' },
         { value: 'bg-blue-500', label: 'Azul' },
         { value: 'bg-green-500', label: 'Verde' }
     ];
     
     const niveles = [
         { value: 1, label: '🔰 Básico - Solo ver reservas', desc: 'Acceso limitado a reservas' },
-        { value: 2, label: '⭐ Intermedio - Reservas + Configuración propia + Clientes', desc: 'Puede ver configuración y clientes' },
+        { value: 2, label: '⭐ Intermedio - Reservas + Configuración propia + Clientes', desc: 'Puede ver configuración (solo sus horarios) y clientes' },
         { value: 3, label: '👑 Avanzado - Acceso total', desc: 'Puede gestionar todo como el dueño' }
     ];
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onGuardar(form);
+        if (!form.telefono || form.telefono.length < 8) {
+            alert('Ingresá un teléfono válido para el acceso del profesional');
+            return;
+        }
+        if (!profesional && !String(form.password || '').trim()) {
+            alert('Ingresá una contraseña para el acceso del profesional');
+            return;
+        }
+
+        const payload = { ...form };
+        if (!String(payload.password || '').trim()) {
+            delete payload.password;
+        }
+        onGuardar(payload);
     };
 
     return (
@@ -277,6 +290,7 @@ function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
                             placeholder="55002272"
                         />
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">8 dígitos después del +53</p>
                 </div>
                 
                 <div>
@@ -288,7 +302,8 @@ function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
                         value={form.password}
                         onChange={(e) => setForm({...form, password: e.target.value})}
                         className="w-full border rounded-lg px-3 py-2"
-                        placeholder="********"
+                        placeholder={profesional ? 'Dejar vacío para mantener la actual' : 'Contraseña de acceso'}
+                        required={!profesional}
                     />
                 </div>
                 
@@ -323,10 +338,8 @@ function ProfesionalForm({ profesional, onGuardar, onCancelar }) {
             
             <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={onCancelar} className="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800">Guardar</button>
+                <button type="submit" className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Guardar</button>
             </div>
         </form>
     );
 }
-
-window.ProfesionalesPanel = ProfesionalesPanel;

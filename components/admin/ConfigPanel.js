@@ -1,4 +1,5 @@
-﻿// components/admin/ConfigPanel.js - Versión con Fechas Libres y Días Cerrados Globales
+// components/admin/ConfigPanel.js - Versión con Fechas Libres y Días Cerrados Globales
+// SIN DEPENDENCIA DE dias-cerrados.js
 
 function ConfigPanel({ profesionalId, modoRestringido }) {
     const [profesionales, setProfesionales] = React.useState([]);
@@ -8,7 +9,9 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
         duracion_turnos: 60,
         intervalo_entre_turnos: 0,
         modo_24h: false,
-        max_antelacion_dias: 30
+        max_antelacion_dias: 30,
+        min_antelacion_horas: 2,
+        min_cancelacion_horas: 1
     });
     const [cargando, setCargando] = React.useState(true);
     const [nombreNegocio, setNombreNegocio] = React.useState('');
@@ -38,7 +41,8 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
         { value: 7, label: '7 días', icon: '📆' },
         { value: 15, label: '15 días', icon: '📅' },
         { value: 30, label: '30 días', icon: '📅' },
-        { value: 60, label: '60 días', icon: '📆' }
+        { value: 60, label: '60 días', icon: '📆' },
+        { value: 0, label: 'Indefinido', icon: '∞' }
     ];
 
     React.useEffect(() => {
@@ -54,8 +58,8 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            if (window.salonprofesionales) {
-                const lista = await window.salonprofesionales.getAll(true);
+            if (window.salonProfesionales) {
+                const lista = await window.salonProfesionales.getAll(true);
                 setProfesionales(lista || []);
                 
                 if (!modoRestringido && lista && lista.length > 0) {
@@ -69,7 +73,9 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                     duracion_turnos: 60,
                     intervalo_entre_turnos: 0,
                     modo_24h: false,
-                    max_antelacion_dias: 30
+                    max_antelacion_dias: 30,
+                    min_antelacion_horas: 2,
+                    min_cancelacion_horas: 1
                 });
             }
         } catch (error) {
@@ -102,7 +108,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
         return (
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
                     <p className="text-gray-500 mt-4">Cargando configuración...</p>
                 </div>
             </div>
@@ -117,6 +123,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
             
             {!modoRestringido && (
                 <>
+                    {/* CONFIGURACIÓN GENERAL */}
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
                         <h3 className="font-semibold text-lg mb-4">⚙️ Configuración General</h3>
                         
@@ -137,7 +144,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                             className={`
                                                 py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center
                                                 ${configGlobal.duracion_turnos === opcion.value
-                                                    ? 'bg-purple-700 text-white shadow-md ring-2 ring-amber-300'
+                                                    ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-300'
                                                     : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}
                                             `}
                                         >
@@ -168,9 +175,9 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                         
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Antelación máxima para reservar
+                                Antelacion maxima para reservar
                             </label>
-                            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                                 {opcionesAntelacion.map(opcion => (
                                     <button
                                         key={opcion.value}
@@ -182,7 +189,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                         className={`
                                             py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center
                                             ${configGlobal.max_antelacion_dias === opcion.value
-                                                ? 'bg-purple-700 text-white shadow-md ring-2 ring-amber-300'
+                                                ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-300'
                                                 : 'bg-white border border-gray-300 text-gray-700 hover:border-amber-400 hover:bg-amber-50'}
                                         `}
                                     >
@@ -193,6 +200,48 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                             </div>
                         </div>
                         
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Antelacion minima para reservar (horas)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={configGlobal.min_antelacion_horas ?? 2}
+                                    onChange={(e) => setConfigGlobal({
+                                        ...configGlobal,
+                                        min_antelacion_horas: Math.max(0, parseInt(e.target.value) || 0)
+                                    })}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                                    min="0"
+                                    step="1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Ej: 2 evita reservar turnos con menos de 2 horas.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Antelacion minima para cancelar (horas)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={configGlobal.min_cancelacion_horas ?? 1}
+                                    onChange={(e) => setConfigGlobal({
+                                        ...configGlobal,
+                                        min_cancelacion_horas: Math.max(0, parseInt(e.target.value) || 0)
+                                    })}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                                    min="0"
+                                    step="1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Ej: 1 evita cancelar cuando falta menos de 1 hora.
+                                </p>
+                            </div>
+                        </div>
+
                         <div className="mb-4">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -202,7 +251,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                                         ...configGlobal, 
                                         modo_24h: e.target.checked
                                     })}
-                                    className="w-5 h-5 text-purple-700"
+                                    className="w-5 h-5 text-amber-600"
                                 />
                                 <span className="text-sm text-gray-700">Modo 24 horas</span>
                             </label>
@@ -210,16 +259,18 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                         
                         <button
                             onClick={handleGuardarConfigGlobal}
-                            className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition text-sm"
+                            className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition text-sm"
                         >
                             Guardar Configuración Global
                         </button>
                     </div>
 
+                    {/* NUEVO: DÍAS CERRADOS GLOBALES - SIN DEPENDENCIA EXTERNA */}
                     <DiasCerradosGlobalesPanel />
                 </>
             )}
             
+            {/* SECCIÓN DEL PROFESIONAL */}
             <div className="mb-6 p-4 border rounded-lg bg-white shadow-sm mt-6">
                 <h3 className="font-semibold text-lg mb-4">👥 Configuración del Profesional</h3>
                 
@@ -243,13 +294,13 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                             <button
                                 onClick={abrirEditorPorDia}
                                 disabled={!profesionalSeleccionado}
-                                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Horarios por día
                             </button>
                         </div>
                         {profesionales.length === 0 && !cargando && (
-                            <p className="text-sm text-purple-700 mt-2">
+                            <p className="text-sm text-amber-600 mt-2">
                                 ⚠️ No hay profesionales activos.
                             </p>
                         )}
@@ -260,13 +311,14 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                     <div className="mb-4">
                         <button
                             onClick={abrirEditorPorDia}
-                            className="w-full bg-purple-700 text-white px-4 py-3 rounded-lg hover:bg-amber-700 font-medium"
+                            className="w-full bg-amber-600 text-white px-4 py-3 rounded-lg hover:bg-amber-700 font-medium"
                         >
                             Configurar mis horarios por día
                         </button>
                     </div>
                 )}
 
+                {/* PANEL DE DÍAS LIBRES INDIVIDUALES */}
                 {profesionalSeleccionado && (
                     <FechasLibresPanel 
                         profesionalId={profesionalSeleccionado} 
@@ -276,6 +328,7 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
                 )}
             </div>
             
+            {/* Modal para editor por día */}
             {mostrarEditorPorDia && profesionalSeleccionado && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
@@ -294,6 +347,9 @@ function ConfigPanel({ profesionalId, modoRestringido }) {
     );
 }
 
+// ==========================================
+// COMPONENTE: FECHAS LIBRES POR PROFESIONAL
+// ==========================================
 function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
     const [fechas, setFechas] = React.useState([]);
     const [nuevaFecha, setNuevaFecha] = React.useState('');
@@ -325,8 +381,8 @@ function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
 
     const guardarFechas = async (nuevasFechas) => {
         try {
-            if (window.salonprofesionales && window.salonprofesionales.actualizar) {
-                await window.salonprofesionales.actualizar(profesionalId, { fechas_libres: nuevasFechas });
+            if (window.salonProfesionales && window.salonProfesionales.actualizar) {
+                await window.salonProfesionales.actualizar(profesionalId, { fechas_libres: nuevasFechas });
                 if (onActualizar) onActualizar(); 
             }
         } catch (error) {
@@ -385,6 +441,9 @@ function FechasLibresPanel({ profesionalId, profesionales, onActualizar }) {
     );
 }
 
+// ==========================================
+// COMPONENTE: DÍAS CERRADOS DEL LOCAL - SIN DEPENDENCIA EXTERNA
+// ==========================================
 function DiasCerradosGlobalesPanel() {
     const [dias, setDias] = React.useState([]);
     const [fecha, setFecha] = React.useState('');
@@ -420,6 +479,7 @@ function DiasCerradosGlobalesPanel() {
             
             if (response.ok) {
                 const data = await response.json();
+                // Filtrar solo los que son iguales o posteriores a hoy
                 const hoy = new Date().toISOString().split('T')[0];
                 const diasFuturos = (data || []).filter(d => d.fecha >= hoy);
                 setDias(diasFuturos);
@@ -434,6 +494,7 @@ function DiasCerradosGlobalesPanel() {
     React.useEffect(() => {
         cargarDias();
         
+        // Escuchar cambios en días cerrados
         const handleActualizacion = () => cargarDias();
         window.addEventListener('diasCerradosActualizados', handleActualizacion);
         
@@ -477,6 +538,7 @@ function DiasCerradosGlobalesPanel() {
                 setFecha('');
                 setMotivo('');
                 cargarDias();
+                // Disparar evento para actualizar otros componentes
                 if (window.dispatchEvent) {
                     window.dispatchEvent(new Event('diasCerradosActualizados'));
                 }
@@ -580,5 +642,3 @@ function DiasCerradosGlobalesPanel() {
         </div>
     );
 }
-
-window.ConfigPanel = ConfigPanel;

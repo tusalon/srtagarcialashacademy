@@ -1,4 +1,4 @@
-﻿// utils/config.js - Configuración del negocio (CORREGIDO)
+// utils/config.js - Configuración del negocio (CORREGIDO)
 
 // ============================================
 // PROTECCIÓN CONTRA DOBLE CARGA
@@ -24,10 +24,12 @@ let configuracionGlobal = {
     duracion_turnos: 60,
     intervalo_entre_turnos: 0,
     modo_24h: false,
-    max_antelacion_dias: 30
+    max_antelacion_dias: 30,
+    min_antelacion_horas: 2,
+    min_cancelacion_horas: 1
 };
 
-let horariosprofesionales = {};
+let horariosProfesionales = {};
 let ultimaActualizacion = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -81,7 +83,7 @@ async function cargarConfiguracionGlobal() {
     }
 }
 
-async function cargarHorariosprofesionales() {
+async function cargarHorariosProfesionales() {
     try {
         const negocioId = getNegocioId();
         console.log('🌐 Cargando horarios de profesionales desde Supabase para negocio:', negocioId);
@@ -104,12 +106,13 @@ async function cargarHorariosprofesionales() {
         (data || []).forEach(item => {
             horarios[item.profesional_id] = {
                 horariosPorDia: item.horarios_por_dia || {},
+                descansosPorDia: item.descansos_por_dia || {},
                 horas: item.horas || [],
                 dias: item.dias || []
             };
         });
         
-        horariosprofesionales = horarios;
+        horariosProfesionales = horarios;
         return horarios;
     } catch (error) {
         console.error('Error cargando horarios:', error);
@@ -136,7 +139,9 @@ window.salonConfig = {
                 duracion_turnos: nuevaConfig.duracion_turnos || 60,
                 intervalo_entre_turnos: nuevaConfig.intervalo_entre_turnos || 0,
                 modo_24h: nuevaConfig.modo_24h || false,
-                max_antelacion_dias: nuevaConfig.max_antelacion_dias || 30
+                max_antelacion_dias: nuevaConfig.max_antelacion_dias ?? 30,
+                min_antelacion_horas: nuevaConfig.min_antelacion_horas ?? 2,
+                min_cancelacion_horas: nuevaConfig.min_cancelacion_horas ?? 1
             };
             
             console.log('📤 Datos a enviar:', datosAGuardar);
@@ -231,8 +236,31 @@ window.salonConfig = {
             return {};
         }
     },
+
+    getDescansosPorDia: async function(profesionalId) {
+        try {
+            const negocioId = getNegocioId();
+            const response = await fetch(
+                `${window.SUPABASE_URL}/rest/v1/horarios_profesionales?negocio_id=eq.${negocioId}&profesional_id=eq.${profesionalId}&select=descansos_por_dia`,
+                {
+                    headers: {
+                        'apikey': window.SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) return {};
+
+            const data = await response.json();
+            return data[0]?.descansos_por_dia || {};
+        } catch (error) {
+            console.error('Error cargando descansos:', error);
+            return {};
+        }
+    },
     
-    guardarHorariosPorDia: async function(profesionalId, horariosPorDia) {
+    guardarHorariosPorDia: async function(profesionalId, horariosPorDia, descansosPorDia = null) {
         try {
             const negocioId = getNegocioId();
             console.log(`💾 Guardando horarios por día para profesional ${profesionalId} (negocio: ${negocioId}):`, horariosPorDia);
@@ -268,6 +296,7 @@ window.salonConfig = {
                 method = 'PATCH';
                 body = JSON.stringify({
                     horarios_por_dia: horariosPorDia,
+                    ...(descansosPorDia ? { descansos_por_dia: descansosPorDia } : {}),
                     horas: horasArray,
                     dias: diasQueTrabajan
                 });
@@ -279,6 +308,7 @@ window.salonConfig = {
                     negocio_id: negocioId,
                     profesional_id: profesionalId,
                     horarios_por_dia: horariosPorDia,
+                    ...(descansosPorDia ? { descansos_por_dia: descansosPorDia } : {}),
                     horas: horasArray,
                     dias: diasQueTrabajan
                 });
@@ -305,8 +335,9 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosprofesionales[profesionalId] = {
+            horariosProfesionales[profesionalId] = {
                 horariosPorDia: horariosPorDia,
+                descansosPorDia: descansosPorDia || horariosProfesionales[profesionalId]?.descansosPorDia || {},
                 horas: horasArray,
                 dias: diasQueTrabajan
             };
@@ -325,7 +356,7 @@ window.salonConfig = {
         }
     },
     
-    getHorariosLashista: async function(profesionalId) {
+    getHorariosProfesional: async function(profesionalId) {
         try {
             const negocioId = getNegocioId();
             const response = await fetch(
@@ -345,16 +376,17 @@ window.salonConfig = {
                 return {
                     horas: data[0].horas || [],
                     dias: data[0].dias || [],
-                    horariosPorDia: data[0].horarios_por_dia || {}
+                    horariosPorDia: data[0].horarios_por_dia || {},
+                    descansosPorDia: data[0].descansos_por_dia || {}
                 };
             }
-            return { horas: [], dias: [], horariosPorDia: {} };
+            return { horas: [], dias: [], horariosPorDia: {}, descansosPorDia: {} };
         } catch (error) {
-            return { horas: [], dias: [], horariosPorDia: {} };
+            return { horas: [], dias: [], horariosPorDia: {}, descansosPorDia: {} };
         }
     },
     
-    guardarHorariosLashista: async function(profesionalId, horarios) {
+    guardarHorariosProfesional: async function(profesionalId, horarios) {
         if (horarios.horariosPorDia) {
             return this.guardarHorariosPorDia(profesionalId, horarios.horariosPorDia);
         }
@@ -421,7 +453,7 @@ window.salonConfig = {
             const data = await response.json();
             console.log('✅ Horarios guardados exitosamente:', data);
             
-            horariosprofesionales[profesionalId] = {
+            horariosProfesionales[profesionalId] = {
                 horas: horarios.horas || [],
                 dias: horarios.dias || []
             };
@@ -434,21 +466,21 @@ window.salonConfig = {
             return Array.isArray(data) ? data[0] : data;
             
         } catch (error) {
-            console.error('Error en guardarHorariosLashista:', error);
+            console.error('Error en guardarHorariosProfesional:', error);
             alert('Error al guardar horarios: ' + error.message);
             return null;
         }
     },
     
     // Alias para compatibilidad
-    getHorariosBarbero: async function(LashistaId) {
-        console.warn('⚠️ getHorariosBarbero está obsoleto, usar getHorariosLashista');
-        return this.getHorariosLashista(LashistaId);
+    getHorariosBarbero: async function(profesionalId) {
+        console.warn('⚠️ getHorariosBarbero está obsoleto, usar getHorariosProfesional');
+        return this.getHorariosProfesional(profesionalId);
     },
     
-    guardarHorariosBarbero: async function(LashistaId, horarios) {
-        console.warn('⚠️ guardarHorariosBarbero está obsoleto, usar guardarHorariosLashista');
-        return this.guardarHorariosLashista(LashistaId, horarios);
+    guardarHorariosBarbero: async function(profesionalId, horarios) {
+        console.warn('⚠️ guardarHorariosBarbero está obsoleto, usar guardarHorariosProfesional');
+        return this.guardarHorariosProfesional(profesionalId, horarios);
     },
     
     horasToIndices: function(horasLegibles) {
@@ -463,7 +495,7 @@ window.salonConfig = {
 // Cargar configuración al inicio
 setTimeout(async () => {
     await cargarConfiguracionGlobal();
-    await cargarHorariosprofesionales();
+    await cargarHorariosProfesionales();
 }, 1000);
 
 console.log('✅ salonConfig inicializado');

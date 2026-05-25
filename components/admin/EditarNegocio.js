@@ -1,4 +1,4 @@
-﻿// components/admin/EditarNegocio.js - VERSIÓN SIN COLORES (CONSERVA LOGO Y HORARIO)
+// components/admin/EditarNegocio.js - VERSIÓN SIN COLORES (CONSERVA LOGO Y HORARIO)
 // + NUEVA SECCIÓN DE ANTICIPOS
 
 function EditarNegocio() {
@@ -15,8 +15,10 @@ function EditarNegocio() {
         logo_url: '',
         logo_preview: '',
         logo_file: null,
+        imagen_fondo_tipo: 'unas',
         mensaje_bienvenida: '',
         mensaje_confirmacion: '',
+        mensaje_inasistencia: 'Hola {cliente}, registramos que no asististe a tu turno en {nombre_negocio}.\n\nServicio: {servicio}\nFecha: {fecha}\nHora: {hora}\nProfesional: {profesional}\n\nSi necesitas reprogramar, por favor escribenos por este WhatsApp.',
         instagram: '',
         facebook: '',
         horario_atencion: '',
@@ -61,8 +63,10 @@ function EditarNegocio() {
                     logo_url: configData.logo_url || '',
                     logo_preview: configData.logo_url || '',
                     logo_file: null,
+                    imagen_fondo_tipo: configData.imagen_fondo_tipo || 'unas',
                     mensaje_bienvenida: configData.mensaje_bienvenida || '¡Bienvenido!',
                     mensaje_confirmacion: configData.mensaje_confirmacion || 'Tu turno ha sido reservado',
+                    mensaje_inasistencia: configData.mensaje_inasistencia || 'Hola {cliente}, registramos que no asististe a tu turno en {nombre_negocio}.\n\nServicio: {servicio}\nFecha: {fecha}\nHora: {hora}\nProfesional: {profesional}\n\nSi necesitas reprogramar, por favor escribenos por este WhatsApp.',
                     instagram: configData.instagram || '',
                     facebook: configData.facebook || '',
                     horario_atencion: configData.horario_atencion || '',
@@ -173,10 +177,12 @@ function EditarNegocio() {
                 direccion: config.direccion || null,
                 mensaje_bienvenida: config.mensaje_bienvenida,
                 mensaje_confirmacion: config.mensaje_confirmacion,
+                mensaje_inasistencia: config.mensaje_inasistencia || null,
                 instagram: config.instagram || null,
                 facebook: config.facebook || null,
                 horario_atencion: config.horario_atencion || null,
                 logo_url: logo_url,
+                imagen_fondo_tipo: config.imagen_fondo_tipo || 'unas',
                 // 🆕 INCLUIR CAMPOS DE ANTICIPO
                 requiere_anticipo: config.requiere_anticipo,
                 tipo_anticipo: config.tipo_anticipo,
@@ -231,7 +237,7 @@ function EditarNegocio() {
     if (cargando) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
             </div>
         );
     }
@@ -259,7 +265,7 @@ function EditarNegocio() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6 pb-4 border-b">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-purple-700 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center">
                                 <i className="icon-building text-2xl text-white"></i>
                             </div>
                             <div>
@@ -287,7 +293,7 @@ function EditarNegocio() {
                         {/* SECCIÓN 1: Datos básicos */}
                         <div>
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <i className="icon-info text-purple-600"></i>
+                                <i className="icon-info text-amber-500"></i>
                                 Datos básicos
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -299,7 +305,7 @@ function EditarNegocio() {
                                         type="text"
                                         value={config.nombre}
                                         onChange={(e) => setConfig({...config, nombre: e.target.value})}
-                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                                 <div>
@@ -314,7 +320,7 @@ function EditarNegocio() {
                                             type="text"
                                             value={config.telefono}
                                             onChange={(e) => setConfig({...config, telefono: e.target.value.replace(/\D/g, '')})}
-                                            className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                            className="w-full px-4 py-2 rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                             maxLength="8"
                                         />
                                     </div>
@@ -327,7 +333,7 @@ function EditarNegocio() {
                                         type="email"
                                         value={config.email}
                                         onChange={(e) => setConfig({...config, email: e.target.value})}
-                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                                 <div>
@@ -338,7 +344,7 @@ function EditarNegocio() {
                                         type="text"
                                         value={config.direccion}
                                         onChange={(e) => setConfig({...config, direccion: e.target.value})}
-                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                     />
                                 </div>
                             </div>
@@ -347,7 +353,7 @@ function EditarNegocio() {
                         {/* SECCIÓN 2: Personalización visual */}
                         <div className="pt-4 border-t">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <i className="icon-palette text-purple-600"></i>
+                                <i className="icon-palette text-amber-500"></i>
                                 Personalización
                             </h2>
                             
@@ -357,7 +363,7 @@ function EditarNegocio() {
                                     Logo del negocio
                                 </label>
                                 <div 
-                                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-600 transition cursor-pointer"
+                                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-500 transition cursor-pointer"
                                     onClick={() => document.getElementById('logo-input').click()}
                                 >
                                     <input
@@ -382,6 +388,34 @@ function EditarNegocio() {
                                 </div>
                             </div>
 
+                            {/* Fondo de la app de clientes */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Imagen de fondo para clientes
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {(window.HERO_BACKGROUND_OPTIONS || []).map((opcion) => (
+                                        <button
+                                            type="button"
+                                            key={opcion.id}
+                                            onClick={() => setConfig({...config, imagen_fondo_tipo: opcion.id})}
+                                            className={`overflow-hidden rounded-lg border-2 bg-white text-left transition ${
+                                                config.imagen_fondo_tipo === opcion.id
+                                                    ? 'border-amber-600 ring-2 ring-amber-200'
+                                                    : 'border-gray-200 hover:border-amber-300'
+                                            }`}
+                                        >
+                                            <img src={opcion.image} alt={opcion.label} className="h-24 w-full object-cover" />
+                                            <div className="p-3">
+                                                <p className="text-sm font-semibold text-gray-900">{opcion.label}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{opcion.description}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">Esta imagen se vera en la pantalla de acceso y bienvenida de la clienta.</p>
+                            </div>
+
                             {/* Horario de atención */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -400,7 +434,7 @@ function EditarNegocio() {
                         {/* 🆕 SECCIÓN 3: Anticipos (NUEVA) */}
                         <div className="pt-4 border-t">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <i className="icon-coin-stack text-purple-600"></i>
+                                <i className="icon-coin-stack text-amber-500"></i>
                                 💰 Anticipos
                             </h2>
                             
@@ -418,7 +452,7 @@ function EditarNegocio() {
                                             onChange={(e) => setConfig({...config, requiere_anticipo: e.target.checked})}
                                             className="sr-only peer"
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-700"></div>
+                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                     </label>
                                 </div>
 
@@ -435,7 +469,7 @@ function EditarNegocio() {
                                                     onClick={() => setConfig({...config, tipo_anticipo: 'fijo'})}
                                                     className={`p-4 rounded-lg border-2 transition-all ${
                                                         config.tipo_anticipo === 'fijo'
-                                                            ? 'border-purple-700 bg-amber-50'
+                                                            ? 'border-amber-600 bg-amber-50'
                                                             : 'border-gray-200 hover:border-amber-300'
                                                     }`}
                                                 >
@@ -448,7 +482,7 @@ function EditarNegocio() {
                                                     onClick={() => setConfig({...config, tipo_anticipo: 'porcentaje'})}
                                                     className={`p-4 rounded-lg border-2 transition-all ${
                                                         config.tipo_anticipo === 'porcentaje'
-                                                            ? 'border-purple-700 bg-amber-50'
+                                                            ? 'border-amber-600 bg-amber-50'
                                                             : 'border-gray-200 hover:border-amber-300'
                                                     }`}
                                                 >
@@ -564,7 +598,7 @@ function EditarNegocio() {
                                                     <span><code>{'{servicio}'}</code> - Nombre del servicio</span>
                                                     <span><code>{'{fecha}'}</code> - Fecha del turno</span>
                                                     <span><code>{'{hora}'}</code> - Hora del turno</span>
-                                                    <span><code>{'{Lashista}'}</code> - Lashista</span>
+                                                    <span><code>{'{profesional}'}</code> - Profesional</span>
                                                     <span><code>{'{cbu}'}</code> - CBU</span>
                                                     <span><code>{'{alias}'}</code> - Alias</span>
                                                     <span><code>{'{titular}'}</code> - Titular</span>
@@ -581,7 +615,7 @@ function EditarNegocio() {
                         {/* SECCIÓN 4: Mensajes */}
                         <div className="pt-4 border-t">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <i className="icon-message-square text-purple-600"></i>
+                                <i className="icon-message-square text-amber-500"></i>
                                 Mensajes
                             </h2>
                             <div className="space-y-4">
@@ -608,13 +642,27 @@ function EditarNegocio() {
                                         rows="3"
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mensaje por inasistencia
+                                    </label>
+                                    <textarea
+                                        value={config.mensaje_inasistencia}
+                                        onChange={(e) => setConfig({...config, mensaje_inasistencia: e.target.value})}
+                                        className="w-full border rounded-lg px-3 py-2"
+                                        rows="6"
+                                    />
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Variables: {'{cliente}'}, {'{nombre_negocio}'}, {'{servicio}'}, {'{fecha}'}, {'{hora}'}, {'{profesional}'}.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
                         {/* SECCIÓN 5: Redes sociales */}
                         <div className="pt-4 border-t">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <i className="icon-share-2 text-purple-600"></i>
+                                <i className="icon-share-2 text-amber-500"></i>
                                 Redes sociales
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

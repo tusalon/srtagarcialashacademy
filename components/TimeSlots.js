@@ -1,13 +1,15 @@
-﻿// components/TimeSlots.js - Versión femenina con filtro de horarios permitidos por servicio
+// components/TimeSlots.js - Versión femenina con filtro de horarios permitidos por servicio
 
-function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
+function TimeSlots({ service, date, profesional, onTimeSelect, selectedTime }) {
     const [slots, setSlots] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
     const [horariosPorDia, setHorariosPorDia] = React.useState({});
+    const [descansosPorDia, setDescansosPorDia] = React.useState({});
     const [diaTrabaja, setDiaTrabaja] = React.useState(true);
     const [verificacionCompleta, setVerificacionCompleta] = React.useState(false);
     const [maxAntelacionDias, setMaxAntelacionDias] = React.useState(30);
+    const [minAntelacionHoras, setMinAntelacionHoras] = React.useState(2);
 
     const indiceToHoraLegible = (indice) => {
         const horas = Math.floor(indice / 2);
@@ -21,8 +23,11 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                 if (window.salonConfig) {
                     const config = await window.salonConfig.get();
                     console.log('⚙️ Configuración cargada en TimeSlots:', config);
-                    if (config && config.max_antelacion_dias) {
+                    if (config && config.max_antelacion_dias !== undefined) {
                         setMaxAntelacionDias(config.max_antelacion_dias);
+                    }
+                    if (config && config.min_antelacion_horas !== undefined) {
+                        setMinAntelacionHoras(config.min_antelacion_horas);
                     }
                 }
             } catch (error) {
@@ -52,20 +57,83 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         return hours * 60 + minutes;
     };
 
+    const variantesHorarioPermitido = (timeStr) => {
+        const partes = String(timeStr || '').trim().split(':');
+        if (partes.length < 2) return [];
+        const hours = parseInt(partes[0], 10);
+        const minutes = parseInt(partes[1], 10);
+        if (Number.isNaN(hours) || Number.isNaN(minutes)) return [];
+
+        const normal = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const variantes = [normal];
+        if (hours >= 1 && hours <= 7) {
+            variantes.push(`${String(hours + 12).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+        }
+        return variantes;
+    };
+
+    const servicioPermiteHorario = (servicio, slot) => {
+        const permitidos = servicio?.horarios_permitidos || [];
+        if (!permitidos.length) return true;
+        const normalizados = new Set(permitidos.flatMap(variantesHorarioPermitido));
+        return normalizados.has(slot);
+    };
+
+    const slotTieneDescanso = (slotStart, slotEnd, descansosDelDia = []) => {
+        return descansosDelDia.some(descanso => {
+            if (!descanso?.inicio || !descanso?.fin) return false;
+            const descansoStart = timeToMinutes(descanso.inicio);
+            const descansoEnd = timeToMinutes(descanso.fin);
+            return (slotStart < descansoEnd) && (slotEnd > descansoStart);
+        });
+    };
+
+    const crearBloquesTrabajo = (slotsDelDia = [], duracionTurno = 60, intervaloTurnos = 0) => {
+        const minutosTrabajo = slotsDelDia
+            .map(timeToMinutes)
+            .sort((a, b) => a - b);
+
+        const bloquesBase = minutosTrabajo.map((minuto, index) => {
+            const siguiente = minutosTrabajo[index + 1];
+            const anterior = minutosTrabajo[index - 1];
+            return {
+                inicio: minuto,
+                fin: siguiente ? Math.max(siguiente, minuto + duracionTurno) : 24 * 60,
+                conectaAnterior: anterior !== undefined && minuto - anterior <= duracionTurno + intervaloTurnos
+            };
+        });
+
+        const bloques = [];
+        bloquesBase.forEach(bloque => {
+            const ultimo = bloques[bloques.length - 1];
+            if (ultimo && bloque.conectaAnterior) {
+                ultimo.fin = Math.max(ultimo.fin, bloque.fin);
+            } else {
+                bloques.push({ inicio: bloque.inicio, fin: bloque.fin });
+            }
+        });
+
+        return bloques;
+    };
+
     React.useEffect(() => {
-        if (!Lashista) return;
+        if (!profesional) return;
         
         const cargarHorarios = async () => {
             setVerificacionCompleta(false);
             try {
-                console.log(`📅 Cargando horarios por día de ${Lashista.nombre}...`);
-                const horarios = await window.salonConfig.getHorariosPorDia(Lashista.id);
-                console.log(`✅ Horarios por día de ${Lashista.nombre}:`, horarios);
+                console.log(`📅 Cargando horarios por día de ${profesional.nombre}...`);
+                const horarios = await window.salonConfig.getHorariosPorDia(profesional.id);
+                const descansos = window.salonConfig.getDescansosPorDia ?
+                    await window.salonConfig.getDescansosPorDia(profesional.id) :
+                    {};
+                console.log(`✅ Horarios por día de ${profesional.nombre}:`, horarios);
                 setHorariosPorDia(horarios);
+                setDescansosPorDia(descansos);
                 
                 const tieneHorarios = Object.keys(horarios).length > 0;
                 if (!tieneHorarios) {
-                    console.log('⚠️ No hay horarios configurados para este Lashista');
+                    console.log('⚠️ No hay horarios configurados para este profesional');
                 }
             } catch (error) {
                 console.error('Error cargando horarios:', error);
@@ -74,16 +142,16 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         };
         
         cargarHorarios();
-    }, [Lashista]);
+    }, [profesional]);
 
     React.useEffect(() => {
-        if (!Lashista || !date) {
+        if (!profesional || !date) {
             setVerificacionCompleta(false);
             return;
         }
 
         console.log('🔍 Verificando disponibilidad para:', {
-            Lashista: Lashista.nombre,
+            profesional: profesional.nombre,
             fecha: date,
             horariosPorDia
         });
@@ -97,7 +165,7 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         const horariosDelDia = horariosPorDia[diaSemana] || [];
         const trabaja = horariosDelDia.length > 0;
         
-        console.log(`🎯 ¿${Lashista.nombre} trabaja el ${diaSemana}?`, trabaja);
+        console.log(`🎯 ¿${profesional.nombre} trabaja el ${diaSemana}?`, trabaja);
         if (!trabaja && horariosDelDia.length === 0) {
             console.log(`⚠️ No hay horarios configurados para ${diaSemana}`);
         }
@@ -105,10 +173,10 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         setDiaTrabaja(trabaja);
         setVerificacionCompleta(true);
         
-    }, [Lashista, horariosPorDia, date]);
+    }, [profesional, horariosPorDia, date]);
 
     React.useEffect(() => {
-        if (!service || !date || !Lashista || !verificacionCompleta) return;
+        if (!service || !date || !profesional || !verificacionCompleta) return;
         
         if (!diaTrabaja) {
             setSlots([]);
@@ -125,7 +193,7 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                 const diffTime = fechaSeleccionada - hoy;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
-                if (diffDays > maxAntelacionDias) {
+                if (Number(maxAntelacionDias) > 0 && diffDays > Number(maxAntelacionDias)) {
                     console.log(`🚫 Fecha ${date} supera antelación máxima de ${maxAntelacionDias} días`);
                     setError(`Solo se puede reservar con hasta ${maxAntelacionDias} días de antelación`);
                     setSlots([]);
@@ -139,6 +207,7 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                 const diaSemana = diasSemana[fechaLocal.getDay()];
                 
                 const indicesDelDia = horariosPorDia[diaSemana] || [];
+                const descansosDelDia = descansosPorDia[diaSemana] || [];
                 
                 if (indicesDelDia.length === 0) {
                     console.log(`⚠️ No hay horas configuradas para ${diaSemana}`);
@@ -147,12 +216,12 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                     return;
                 }
                 
-                // Slots base (todos los horarios del Lashista para ese día)
+                // Slots base (todos los horarios del profesional para ese día)
                 let baseSlots = indicesDelDia.map(indice => indiceToHoraLegible(indice));
                 
                 // 🔥 FILTRO POR HORARIOS PERMITIDOS DEL SERVICIO (si existen)
                 if (service.horarios_permitidos && service.horarios_permitidos.length > 0) {
-                    baseSlots = baseSlots.filter(slot => service.horarios_permitidos.includes(slot));
+                    baseSlots = baseSlots.filter(slot => servicioPermiteHorario(service, slot));
                     console.log(`📋 Slots filtrados por horarios permitidos del servicio:`, baseSlots);
                 }
                 
@@ -165,14 +234,14 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                 const horaActual = ahora.getHours();
                 const minutosActuales = ahora.getMinutes();
                 const totalMinutosActual = horaActual * 60 + minutosActuales;
-                const minAllowedMinutes = totalMinutosActual + 120;
+                const minAllowedMinutes = totalMinutosActual + (minAntelacionHoras * 60);
                 
                 console.log('🕐 Hora actual:', `${horaActual}:${minutosActuales}`);
                 console.log('⏱️ Hora mínima permitida (actual + 2h):', 
                     `${Math.floor(minAllowedMinutes / 60)}:${minAllowedMinutes % 60}`);
                 console.log('📅 Fecha seleccionada:', date, 'es hoy?', esHoy);
                 
-                const bookings = await getBookingsByDateAndLashista(date, Lashista.id);
+                const bookings = await getBookingsByDateAndProfesional(date, profesional.id);
                 
                 let availableSlots = baseSlots.filter(slotStartStr => {
                     const slotStart = timeToMinutes(slotStartStr);
@@ -180,6 +249,10 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
 
                     if (esHoy && slotStart < minAllowedMinutes) {
                         console.log(`⏰ Slot ${slotStartStr} es menor a hora mínima - EXCLUIDO`);
+                        return false;
+                    }
+
+                    if (slotTieneDescanso(slotStart, slotEnd, descansosDelDia)) {
                         return false;
                     }
 
@@ -199,7 +272,7 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                 });
                 
                 availableSlots.sort();
-                console.log(`✅ Slots disponibles para ${Lashista.nombre} el ${date}:`, availableSlots);
+                console.log(`✅ Slots disponibles para ${profesional.nombre} el ${date}:`, availableSlots);
                 setSlots(availableSlots);
             } catch (err) {
                 console.error(err);
@@ -210,19 +283,19 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         };
 
         loadSlots();
-    }, [service, date, Lashista, horariosPorDia, diaTrabaja, verificacionCompleta, maxAntelacionDias]);
+    }, [service, date, profesional, horariosPorDia, descansosPorDia, diaTrabaja, verificacionCompleta, maxAntelacionDias, minAntelacionHoras]);
 
-    if (!service || !date || !Lashista) return null;
+    if (!service || !date || !profesional) return null;
 
     if (!verificacionCompleta) {
         return (
             <div className="space-y-4 animate-fade-in">
                 <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
                     <span className="text-2xl">⏰</span>
-                    4. Elegí un horario con {Lashista.nombre}
+                    4. Elegí un horario con {profesional.nombre}
                 </h2>
                 <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
                 </div>
             </div>
         );
@@ -239,14 +312,14 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
             <div className="space-y-4 animate-fade-in">
                 <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
                     <span className="text-2xl">⏰</span>
-                    4. Elegí un horario con {Lashista.nombre}
+                    4. Elegí un horario con {profesional.nombre}
                 </h2>
-                <div className="text-center p-8 bg-purple-100 rounded-xl border border-purple-300">
-                    <div className="text-5xl text-purple-500 mb-3">📅❌</div>
+                <div className="text-center p-8 bg-pink-50 rounded-xl border border-pink-200">
+                    <div className="text-5xl text-pink-400 mb-3">📅❌</div>
                     <p className="text-pink-700 font-medium">
-                        {Lashista.nombre} no trabaja los {diaCapitalizado}s
+                        {profesional.nombre} no trabaja los {diaCapitalizado}s
                     </p>
-                    <p className="text-sm text-purple-600 mt-1">Elegí otro día de la semana</p>
+                    <p className="text-sm text-pink-500 mt-1">Elegí otro día de la semana</p>
                 </div>
             </div>
         );
@@ -256,9 +329,9 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
         <div className="space-y-4 animate-fade-in">
             <h2 className="text-lg font-semibold text-pink-700 flex items-center gap-2">
                 <span className="text-2xl">⏰</span>
-                4. Elegí un horario con {Lashista.nombre}
+                4. Elegí un horario con {profesional.nombre}
                 {selectedTime && (
-                    <span className="text-xs bg-purple-200 text-pink-700 px-2 py-1 rounded-full ml-2">
+                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full ml-2">
                         ✓ Horario seleccionado
                     </span>
                 )}
@@ -266,35 +339,35 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
 
             {loading ? (
                 <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
                 </div>
             ) : error ? (
-                <div className="p-4 bg-purple-100 text-purple-700 rounded-lg text-sm border border-purple-300">{error}</div>
+                <div className="p-4 bg-pink-50 text-pink-600 rounded-lg text-sm border border-pink-200">{error}</div>
             ) : slots.length === 0 ? (
-                <div className="text-center p-8 bg-purple-100 rounded-xl border border-purple-300">
-                    <div className="text-5xl text-purple-500 mb-3">⏰❌</div>
+                <div className="text-center p-8 bg-pink-50 rounded-xl border border-pink-200">
+                    <div className="text-5xl text-pink-400 mb-3">⏰❌</div>
                     <p className="text-pink-700 font-medium">
-                        No hay horarios disponibles para {Lashista.nombre} el {formatDateLocal(date)}
+                        No hay horarios disponibles para {profesional.nombre} el {formatDateLocal(date)}
                     </p>
-                    <p className="text-sm text-purple-600 mt-1">Probá con otra fecha</p>
+                    <p className="text-sm text-pink-500 mt-1">Probá con otra fecha</p>
                 </div>
             ) : (
                 <>
-                    <div className="text-sm bg-gradient-to-r from-purple-100 to-purple-200 p-4 rounded-xl border border-purple-300">
+                    <div className="text-sm bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-xl border border-pink-200">
                         <div className="flex items-center gap-2 text-pink-700">
-                            <span className="text-purple-600">⏰</span>
+                            <span className="text-pink-500">⏰</span>
                             <span className="font-medium">
-                                Horarios disponibles de {Lashista.nombre} para {formatDateLocal(date)}:
+                                Horarios disponibles de {profesional.nombre} para {formatDateLocal(date)}:
                             </span>
                         </div>
                     </div>
                     
                     {date === getCurrentLocalDate() && (
-                        <div className="text-sm text-purple-700 bg-purple-100 p-3 rounded-lg flex items-center gap-2 border border-purple-300">
-                            <span className="text-purple-600">⏰</span>
+                        <div className="text-sm text-pink-600 bg-pink-50 p-3 rounded-lg flex items-center gap-2 border border-pink-200">
+                            <span className="text-pink-500">⏰</span>
                             <span>
-                                Solo se muestran horarios con al menos 2 horas de anticipación 
-                                (hora actual + 2h)
+                                Solo se muestran horarios con al menos {minAntelacionHoras} horas de anticipación 
+                                (hora actual + {minAntelacionHoras}h)
                             </span>
                         </div>
                     )}
@@ -312,8 +385,8 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                                     className={`
                                         py-3 px-2 rounded-lg text-base font-semibold transition-all transform flex flex-col items-center
                                         ${isSelected
-                                            ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg scale-105 ring-2 ring-purple-400'
-                                            : 'bg-white text-pink-700 border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-100 hover:scale-105 hover:shadow-md'}
+                                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg scale-105 ring-2 ring-pink-300'
+                                            : 'bg-white text-pink-700 border-2 border-pink-200 hover:border-pink-400 hover:bg-pink-50 hover:scale-105 hover:shadow-md'}
                                     `}
                                 >
                                     <span className="text-sm">{esMediaHora ? '⏱️' : '⌛'}</span>
@@ -323,7 +396,7 @@ function TimeSlots({ service, date, Lashista, onTimeSelect, selectedTime }) {
                         })}
                     </div>
                     
-                    <p className="text-xs text-purple-500 mt-3 text-center">
+                    <p className="text-xs text-pink-400 mt-3 text-center">
                         ⏰ Horarios cada 30 minutos
                     </p>
                 </>

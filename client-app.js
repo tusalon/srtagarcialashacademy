@@ -1,4 +1,4 @@
-﻿// client-app.js - Aplicación de clientes con flujo completo y PWA
+// client-app.js - Aplicación de clientes con flujo completo y PWA
 // MEJORA: Redirección automática según rol al iniciar
 
 console.log('🚀 CLIENT-APP.JS VERSIÓN:', '2024-03-01');
@@ -23,19 +23,20 @@ function ClientApp() {
     const [step, setStep] = React.useState('auth');
     const [cliente, setCliente] = React.useState(null);
     const [selectedService, setSelectedService] = React.useState(null);
-    const [selectedLashista, setSelectedLashista] = React.useState(null);
+    const [selectedProfesional, setSelectedProfesional] = React.useState(null);
     const [selectedDate, setSelectedDate] = React.useState('');
     const [selectedTime, setSelectedTime] = React.useState('');
     const [bookingConfirmed, setBookingConfirmed] = React.useState(null);
     const [userRol, setUserRol] = React.useState('cliente');
     const [history, setHistory] = React.useState(['auth']);
+    const [horariosPorDia, setHorariosPorDia] = React.useState({});
 
     // ============================================
     // DETECTAR SESIÓN AL INICIAR Y REDIRIGIR SEGÚN ROL
     // ============================================
     React.useEffect(() => {
         const adminAuth = localStorage.getItem('adminAuth') === 'true';
-        const LashistaAuth = localStorage.getItem('LashistaAuth') || localStorage.getItem('profesionalAuth');
+        const profesionalAuth = localStorage.getItem('profesionalAuth');
         const clienteAuth = localStorage.getItem('clienteAuth');
         
         if (adminAuth) {
@@ -44,8 +45,8 @@ function ClientApp() {
             return;
         }
         
-        if (LashistaAuth) {
-            console.log('👤 Usuario Lashista detectado, redirigiendo a admin.html');
+        if (profesionalAuth) {
+            console.log('👤 Usuario profesional detectado, redirigiendo a admin.html');
             window.location.href = 'admin.html';
             return;
         }
@@ -106,7 +107,7 @@ function ClientApp() {
     React.useEffect(() => {
         if (selectedService) {
             setTimeout(() => {
-                document.getElementById('Lashista-section')?.scrollIntoView({ 
+                document.getElementById('profesional-section')?.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'center' 
                 });
@@ -115,7 +116,7 @@ function ClientApp() {
     }, [selectedService]);
 
     React.useEffect(() => {
-        if (selectedLashista) {
+        if (selectedProfesional) {
             setTimeout(() => {
                 document.getElementById('calendar-section')?.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -123,7 +124,7 @@ function ClientApp() {
                 });
             }, 300);
         }
-    }, [selectedLashista]);
+    }, [selectedProfesional]);
 
     React.useEffect(() => {
         if (selectedDate) {
@@ -151,11 +152,30 @@ function ClientApp() {
         navigateTo('service');
     };
 
+    const handleServiceSelect = (service) => {
+        setSelectedService(service);
+        setSelectedProfesional(null);
+        setSelectedDate('');
+        setSelectedTime('');
+        setHorariosPorDia({});
+        setTimeout(() => {
+            document.getElementById('profesional-section')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }, 150);
+    };
+
+    const handleNoAvailability = React.useCallback(() => {
+        setSelectedDate('');
+        setSelectedTime('');
+    }, []);
+
     const handleLogout = () => {
         localStorage.removeItem('clienteAuth');
         setCliente(null);
         setSelectedService(null);
-        setSelectedLashista(null);
+        setSelectedProfesional(null);
         setSelectedDate('');
         setSelectedTime('');
         setUserRol('cliente');
@@ -166,7 +186,7 @@ function ClientApp() {
 
     const resetBooking = () => {
         setSelectedService(null);
-        setSelectedLashista(null);
+        setSelectedProfesional(null);
         setSelectedDate('');
         setSelectedTime('');
         setStep('service');
@@ -214,7 +234,7 @@ function ClientApp() {
             
             case 'service':
                 return (
-                    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-purple-200">
+                    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100">
                         <Header 
                             cliente={cliente} 
                             onLogout={handleLogout}
@@ -227,28 +247,39 @@ function ClientApp() {
                         <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 pb-20">
                             {/* SECCIÓN 1: SERVICIOS */}
                             <ServiceSelection 
-                                onSelect={setSelectedService} 
+                                onSelect={handleServiceSelect} 
                                 selectedService={selectedService}
                             />
                             
-                            {/* SECCIÓN 2: profesionales - CON selectedService */}
+                            {/* SECCIÓN 2: PROFESIONALES - CON selectedService */}
                             {selectedService && (
-                                <div id="Lashista-section">
-                                    <ProfesionalSelector 
-                                        onSelect={setSelectedLashista} 
-                                        selectedLashista={selectedLashista}
-                                        selectedService={selectedService}
-                                    />
+                                <div id="profesional-section">
+                                    {selectedService.esMultiple ? (
+                                        <MultiProfesionalSelector
+                                            onSelect={setSelectedProfesional}
+                                            selectedProfesional={selectedProfesional}
+                                            selectedService={selectedService}
+                                        />
+                                    ) : (
+                                        <ProfesionalSelector
+                                            onSelect={setSelectedProfesional}
+                                            selectedProfesional={selectedProfesional}
+                                            selectedService={selectedService}
+                                        />
+                                    )}
                                 </div>
                             )}
                             
                             {/* SECCIÓN 3: CALENDARIO */}
-                            {selectedLashista && (
+                            {selectedProfesional && (
                                 <div id="calendar-section">
                                     <Calendar 
                                         onDateSelect={setSelectedDate} 
                                         selectedDate={selectedDate}
-                                        Lashista={selectedLashista}
+                                        profesional={selectedProfesional?.esMultiple ? selectedProfesional.asignaciones[0]?.profesional : selectedProfesional}
+                                        profesionalCompleto={selectedProfesional}
+                                        service={selectedService}
+                                        onHorariosCargados={setHorariosPorDia}
                                     />
                                 </div>
                             )}
@@ -256,13 +287,25 @@ function ClientApp() {
                             {/* SECCIÓN 4: HORARIOS */}
                             {selectedDate && (
                                 <div id="time-section">
-                                    <TimeSlots 
-                                        service={selectedService}
-                                        date={selectedDate}
-                                        Lashista={selectedLashista}
-                                        onTimeSelect={setSelectedTime}
-                                        selectedTime={selectedTime}
-                                    />
+                                    {selectedService.esMultiple ? (
+                                        <MultiTimeSlots
+                                            service={selectedService}
+                                            date={selectedDate}
+                                            profesional={selectedProfesional}
+                                            onTimeSelect={setSelectedTime}
+                                            selectedTime={selectedTime}
+                                            onNoAvailability={handleNoAvailability}
+                                        />
+                                    ) : (
+                                        <TimeSlots
+                                            service={selectedService}
+                                            date={selectedDate}
+                                            profesional={selectedProfesional}
+                                            onTimeSelect={setSelectedTime}
+                                            selectedTime={selectedTime}
+                                            horariosPorDia={horariosPorDia}
+                                        />
+                                    )}
                                 </div>
                             )}
                             
@@ -270,7 +313,7 @@ function ClientApp() {
                             {selectedTime && (
                                 <BookingForm
                                     service={selectedService}
-                                    Lashista={selectedLashista}
+                                    profesional={selectedProfesional}
                                     date={selectedDate}
                                     time={selectedTime}
                                     cliente={cliente}
@@ -290,7 +333,7 @@ function ClientApp() {
             
             case 'confirmation':
                 return (
-                    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-purple-200">
+                    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100">
                         <Header 
                             cliente={cliente} 
                             onLogout={handleLogout}

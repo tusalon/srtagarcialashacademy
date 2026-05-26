@@ -146,9 +146,10 @@ window.enviarWhatsApp = function(telefono, mensaje) {
         console.log('📤 enviarWhatsApp llamado a:', telefono);
 
         const telefonoLimpio = telefono.toString().replace(/\D/g, '');
-        const numeroCompleto = telefonoLimpio.startsWith('53') && telefonoLimpio.length > 8
-            ? telefonoLimpio
-            : `53${telefonoLimpio}`;
+        let numeroCompleto = telefonoLimpio;
+        if (!numeroCompleto.startsWith('53')) {
+            numeroCompleto = `53${telefonoLimpio}`;
+        }
 
         const mensajeCodificado = encodeURIComponent(mensaje);
         const url = `https://api.whatsapp.com/send?phone=${numeroCompleto}&text=${mensajeCodificado}`;

@@ -1,6 +1,6 @@
 // sw.js - Service Worker para Srta.García Lash Academy
 
-const CACHE_NAME = 'srtagarcialashacademy-v40';
+const CACHE_NAME = 'srtagarcialashacademy-v39';
 const urlsToCache = [
   '/srtagarcialashacademy/',
   '/srtagarcialashacademy/index.html',
@@ -17,14 +17,7 @@ const urlsToCache = [
   '/srtagarcialashacademy/icons/icon-152x152.png',
   '/srtagarcialashacademy/icons/icon-192x192.png',
   '/srtagarcialashacademy/icons/icon-384x384.png',
-  '/srtagarcialashacademy/icons/icon-512x512.png',
-  '/srtagarcialashacademy/vendor/react.production.min.js',
-  '/srtagarcialashacademy/vendor/react-dom.production.min.js',
-  '/srtagarcialashacademy/vendor/babel.min.js',
-  '/srtagarcialashacademy/vendor/bcrypt.min.js',
-  '/srtagarcialashacademy/vendor/tailwind-browser.js',
-  '/srtagarcialashacademy/vendor/lucide/lucide.css',
-  '/srtagarcialashacademy/vendor/lucide/lucide.woff2'
+  '/srtagarcialashacademy/icons/icon-512x512.png'
 ];
 
 // ============================================

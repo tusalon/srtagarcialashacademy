@@ -48,8 +48,14 @@ jobs:
         working-directory: android
         run: .\gradlew.bat assembleDebug
 
+      - name: Rename APK
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path apk-output
+          Copy-Item android/app/build/outputs/apk/debug/app-debug.apk apk-output/srtagarcialashacademy-debug.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: srtagarcialashacademy-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: apk-output/srtagarcialashacademy-debug.apk

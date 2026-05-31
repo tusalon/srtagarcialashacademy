@@ -182,6 +182,12 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
 
     React.useEffect(() => {
         if (!service || !date || !profesional || !verificacionCompleta) return;
+        
+        if (!diaTrabaja) {
+            setSlots([]);
+            setOccupiedSlots([]);
+            return;
+        }
 
         const loadSlots = async () => {
             setLoading(true);
@@ -202,8 +208,8 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
                     return;
                 }
                 
-                const [year, month, day] = date.split('-').map(Number);
-                const fechaLocal = new Date(year, month - 1, day);
+                const [año, mes, día] = date.split('-').map(Number);
+                const fechaLocal = new Date(año, mes - 1, día);
                 const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
                 const diaSemana = diasSemana[fechaLocal.getDay()];
                 
@@ -211,7 +217,11 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
                 const descansosDelDia = descansosPorDia[diaSemana] || [];
                 
                 if (indicesDelDia.length === 0) {
-                    console.log(`No hay horas base configuradas para ${diaSemana}; se revisan turnos ocupados para lista de espera.`);
+                    console.log(`⚠️ No hay horas configuradas para ${diaSemana}`);
+                    setSlots([]);
+                    setOccupiedSlots([]);
+                    setLoading(false);
+                    return;
                 }
                 
                 // Slots base (todos los horarios del profesional para ese día)
@@ -239,16 +249,7 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
                     `${Math.floor(minAllowedMinutes / 60)}:${minAllowedMinutes % 60}`);
                 console.log('📅 Fecha seleccionada:', date, 'es hoy?', esHoy);
                 
-                let bookings = await getBookingsByDateAndProfesional(date, profesional.id);
-                if (bookings.length === 0 && window.getBookingsByDate) {
-                    const reservasDia = await window.getBookingsByDate(date);
-                    const nombreProfesional = String(profesional.nombre || '').trim().toLowerCase();
-                    bookings = (reservasDia || []).filter(booking => {
-                        const mismoId = String(booking.profesional_id || '') === String(profesional.id || '');
-                        const mismoNombre = String(booking.profesional_nombre || booking.trabajador_nombre || '').trim().toLowerCase() === nombreProfesional;
-                        return mismoId || mismoNombre;
-                    });
-                }
+                const bookings = await getBookingsByDateAndProfesional(date, profesional.id);
                 const waitlist = window.getListaEsperaPorFechaProfesional
                     ? await window.getListaEsperaPorFechaProfesional(date, profesional.id)
                     : [];
@@ -258,25 +259,7 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
                 });
                 setWaitlistSlots(waitlistMap);
                 
-                const occupiedMap = {};
-                const esReservaOcupada = (booking) => {
-                    const estado = String(booking.estado || '').toLowerCase();
-                    return estado !== 'cancelado' && estado !== 'cancelada' && estado !== 'completado' && estado !== 'completada' && estado !== 'ausente';
-                };
-                const agregarTurnoOcupado = (booking) => {
-                    if (!booking?.hora_inicio || !esReservaOcupada(booking)) return;
-                    const hora = normalizeTimeKey(booking.hora_inicio);
-                    const inicioOcupado = timeToMinutes(hora);
-                    if (esHoy && inicioOcupado < minAllowedMinutes) return;
-                    if (!occupiedMap[hora]) {
-                        occupiedMap[hora] = {
-                            hora,
-                            hora_fin: booking.hora_fin,
-                            booking
-                        };
-                    }
-                };
-                bookings.forEach(agregarTurnoOcupado);
+                const occupied = [];
                 let availableSlots = baseSlots.filter(slotStartStr => {
                     const slotStart = timeToMinutes(slotStartStr);
                     const slotEnd = slotStart + service.duracion;
@@ -301,15 +284,18 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
                         return true;
                     } else {
                         console.log(`❌ Slot ${slotStartStr} tiene conflicto - EXCLUIDO`);
+                        occupied.push({
+                            hora: slotStartStr,
+                            hora_fin: bookingConflict.hora_fin,
+                            booking: bookingConflict
+                        });
                         return false;
                     }
                 });
                 
                 availableSlots.sort();
-                const occupied = Object.values(occupiedMap);
                 occupied.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
                 console.log(`✅ Slots disponibles para ${profesional.nombre} el ${date}:`, availableSlots);
-                console.log(`Lista de espera - turnos ocupados para ${profesional.nombre} el ${date}:`, occupied);
                 setSlots(availableSlots);
                 setOccupiedSlots(occupied);
             } catch (err) {
@@ -377,9 +363,9 @@ function TimeSlots({ service, date, profesional, cliente, onTimeSelect, selected
         );
     }
 
-    if (!diaTrabaja && occupiedSlots.length === 0) {
-        const [year, month, day] = date.split('-').map(Number);
-        const fechaLocal = new Date(year, month - 1, day);
+    if (!diaTrabaja) {
+        const [año, mes, día] = date.split('-').map(Number);
+        const fechaLocal = new Date(año, mes - 1, día);
         const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
         const diaSemana = diasSemana[fechaLocal.getDay()];
         const diaCapitalizado = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
